@@ -181,17 +181,6 @@ init -1 python hide:
 
     ## Sounds that are used when button and imagemaps are clicked.
 
-    style.button.activate_sound = "click.wav"
-    style.imagemap.activate_sound = "click.wav"
-
-    ## Sounds that are used when entering and exiting the game menu.
-
-    config.enter_sound = "click.wav"
-    config.exit_sound = "click.wav"
-
-    ## A sample sound that can be played to check the sound volume.
-
-    config.sample_sound = "tower_clock.ogg"
 
     ## Music that is played while the user is at the main menu.
 
