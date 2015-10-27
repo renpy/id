@@ -10,15 +10,28 @@ init python in director:
         # Is the directory currently active.
         state.active = False
 
-        # The list of lines we've seen recently.
-        state.lines = [ ]
-
         # The last line we saw.
         state.line = [ ]
 
+        # The list of lines we've seen recently.
+        state.lines = [ ]
+
+        # The mode we're in.
+        state.mode = "lines"
 
         renpy.session["director"] = state
 
+    class Add(Action):
+
+        def __init__(self, filename, line):
+            self.filename = filename
+            self.line = line
+
+    class Remove(Action):
+
+        def __init__(self, filename, line):
+            self.filename = filename
+            self.line = line
 
     def interact():
 
@@ -28,17 +41,39 @@ init python in director:
         if state.line in lines:
             lines.remove(state.line)
 
-        state.lines = lines
-
         renpy.clear_line_log()
 
-        # Update state.line.
+        # Update state.line to the current line.
         state.line = renpy.get_filename_line()
+
+        # State.lines is the list of lines we've just seen, along with
+        # the actions used to edit those lines.
+        state.lines = [ ]
+
+        for filename, line in lines[:15]:
+
+            if filename.startswith("renpy/"):
+                continue
+
+            text = renpy.scriptedit.get_line_text(filename, line)
+            stripped = text.lstrip(" ")
+            indent = len(text) - len(stripped)
+            text = " " * (indent // 4) + stripped
+
+            short_fn = filename.rpartition('/')[2]
+            pos = "{}:{:04d}".format(short_fn, line)
+
+            state.lines.append((
+                pos,
+                text,
+                Add(filename, line),
+                Remove(filename, line)
+            ))
 
         # Show the director screen.
         if renpy.context_nesting_level() == 0:
-            if not renpy.get_screen("_director"):
-                renpy.show_screen("_director")
+            if not renpy.get_screen("director"):
+                renpy.show_screen("director")
 
 
     if state.active:
@@ -66,15 +101,52 @@ init python in director:
 
 
 
+style director_frame is default:
+    background "#0000006f"
+    xfill True
+    ypadding 4
 
-screen _director:
+style director_text:
+    size 14
+
+style director_button is default
+
+style director_button_text is default:
+    size 14
+
+
+screen director_lines(state):
+
     vbox:
-        hbox:
-            textbutton "Add" action renpy.scriptedit.test_add
-            $ filename, linenumber = renpy.get_filename_line()
-            text "[filename]:[linenumber]"
-            textbutton "Remove" action renpy.scriptedit.test_remove
 
-        for filename, linenumber in director.state.lines:
-            $ lt = renpy.scriptedit.get_line_text(filename, linenumber)
-            text "[filename]:[linenumber] [lt]" size 12
+        for line_pos, line_text, add_action, remove_action in state.lines:
+            hbox:
+                textbutton "+" action add_action:
+                    text_color "#0f0"
+                    text_hover_color "#8f8"
+                    xpadding 5
+
+                text "[line_pos]"
+
+                textbutton "-" action remove_action:
+                    text_color "#f44"
+                    text_hover_color "#fcc"
+                    text_insensitive_color "#f444"
+                    xpadding 5
+
+                text "[line_text]"
+
+
+screen director():
+
+    style_group "director"
+
+    $ state = director.state
+
+    frame:
+
+        if state.mode == "lines":
+            use director_lines(state)
+
+
+
