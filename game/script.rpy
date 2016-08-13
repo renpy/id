@@ -5,23 +5,16 @@ label main_menu:
     return False
 
 # Declare the characters.
-define e = Character(_('Eileen'), color="#c8ffc8")
-
-screen test:
-    zorder 100
-    textbutton "Start Director" action director.Start() xalign 1.0 yalign 1.0
+define e = Character(_('Eileen'))
 
 label start:
 
-    show screen test
+    scene bg roof
 
-    "A"
-    "B"
-    "C"
-    "D"
-    "E"
-    "F"
-    "G"
-    "H"
+    e "This is nice, but you know what would make this game nicer?"
+
+    e "If I showed up right about now."
+
+    e "That's way better, isn't it?"
 
     return

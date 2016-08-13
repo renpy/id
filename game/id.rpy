@@ -9,6 +9,9 @@ init python in director:
         "vtext",
     }
 
+    if not store.renpy.game.args.compile:
+        raise Exception("Run me with --compile!")
+
     state = renpy.session.get("director", None)
     if state is None:
 
@@ -227,8 +230,6 @@ init python in director:
 
             if statement:
                 renpy.scriptedit.insert_line_before(statement, state.filename, state.linenumber)
-
-            print "----"
 
             state.mode = "lines"
             renpy.clear_line_log()
