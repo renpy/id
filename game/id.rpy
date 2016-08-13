@@ -9,8 +9,8 @@ init python in director:
         "vtext",
     }
 
-    if not store.renpy.game.args.compile:
-        raise Exception("Run me with --compile!")
+#     if not store.renpy.game.args.compile:
+#         raise Exception("Run me with --compile!")
 
     state = renpy.session.get("director", None)
     if state is None:
@@ -236,48 +236,53 @@ init python in director:
             renpy.rollback(checkpoints=0, force=True, greedy=True)
 
 
-style director_frame is default:
-    background "#0000006f"
-    xfill True
-    ypadding 4
-    xpadding 5
-
-style director_text:
-    size 16
+style director_text is _text:
+    size 20
 
 style director_label
 
-style director_label_text:
-    size 16
+style director_label_text is director_text:
+    bold True
 
-style director_button is default:
-    xpadding 5
+style director_button is _button
 
-style director_button_text is default:
-    size 16
-    color "#c0c0c0"
-    hover_color "#ffffff"
-    selected_color "#ffffc0"
-
+style director_button_text is _button_text:
+    size 20
 
 screen director_lines(state):
+
 
     vbox:
 
         for line_pos, line_text, add_action, remove_action in state.lines:
+
             hbox:
-                textbutton "+" action add_action:
-                    text_color "#0f0"
-                    text_hover_color "#8f8"
+                text " ":
+                    min_width 179
+                    style "director_text"
 
-                text "[line_pos]"
+                textbutton "add" action add_action style "director_button"
 
-                textbutton "-" action remove_action:
-                    text_color "#f44"
-                    text_hover_color "#fcc"
-                    text_insensitive_color "#f444"
+            hbox:
 
-                text "[line_text]"
+                text "[line_pos]":
+                    min_width 150
+                    text_align 1.0
+                    style "director_text"
+
+                null width 20
+
+                text "[line_text]":
+                    style "director_text"
+
+        hbox:
+            text " ":
+                min_width 179
+                style "director_text"
+
+            textbutton "done" action Hide("director") style "director_button"
+
+
 
 screen director_show(state):
 
@@ -316,6 +321,9 @@ screen director():
     $ state = director.state
 
     frame:
+        style_prefix ""
+        yfill False
+        yalign 0.0
 
         if state.mode == "lines":
             use director_lines(state)
