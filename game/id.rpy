@@ -9,8 +9,8 @@ init python in director:
         "vtext",
     }
 
-#     if not store.renpy.game.args.compile:
-#         raise Exception("Run me with --compile!")
+    if not store.renpy.renpy.game.args.compile:
+        raise Exception("Run me with --compile!")
 
     state = renpy.session.get("director", None)
     if state is None:
@@ -281,7 +281,7 @@ screen director_lines(state):
                 min_width 179
                 style "director_text"
 
-            textbutton "done" action Hide("director") style "director_button"
+            textbutton "done" action Hide("director")
 
 
 
@@ -357,7 +357,7 @@ screen director_show(state):
             null width 20
 
             if statement:
-                textbutton "done" action director.Commit()
+                textbutton "done" action If(statement, director.Commit())
 
 screen director():
 
