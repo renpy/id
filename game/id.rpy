@@ -17,9 +17,6 @@ init python in director:
         # Is the directory currently active.
         state.active = False
 
-        # The last line we saw.
-        state.line = [ ]
-
         # The list of lines we've seen recently.
         state.lines = [ ]
 
@@ -100,9 +97,6 @@ init python in director:
         # Update the line log.
         lines = renpy.get_line_log()
 
-        if state.line in lines:
-            lines.remove(state.line)
-
         renpy.clear_line_log()
 
         # Update state.line to the current line.
@@ -112,7 +106,10 @@ init python in director:
         # the actions used to edit those lines.
         state.lines = [ ]
 
-        for filename, line in lines[:15]:
+        for filename, line, stmt in lines[:30]:
+
+            if stmt not in [ "Show", "Scene", "Say" ]:
+                continue
 
             if filename.startswith("renpy/"):
                 continue
@@ -220,7 +217,22 @@ init python in director:
             renpy.scriptedit.add_to_ast_before(statement, state.filename, state.linenumber)
 
         state.added_statement = statement
+
         renpy.rollback(checkpoints=0, force=True, greedy=True)
+
+    class Commit(Action):
+
+        def __call__(self):
+            statement = get_statement()
+
+            if statement:
+                renpy.scriptedit.insert_line_before(statement, state.filename, state.linenumber)
+
+            print "----"
+
+            state.mode = "lines"
+            renpy.clear_line_log()
+            renpy.rollback(checkpoints=0, force=True, greedy=True)
 
 
 style director_frame is default:
@@ -280,7 +292,7 @@ screen director_show(state):
                 textbutton "[t]" action director.SetTag(t)
 
 
-        null height 4
+        null height 8
 
         hbox:
             box_wrap True
@@ -290,11 +302,11 @@ screen director_show(state):
             for a in director.get_attributes():
                 textbutton "[a]" action director.ToggleAttribute(a)
 
-        null height 4
+        null height 8
 
         if statement:
             text "[statement!q]"
-
+            textbutton "done" action director.Commit()
 
 screen director():
 
