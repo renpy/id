@@ -248,6 +248,7 @@ style director_button is _button
 
 style director_button_text is _button_text:
     size 20
+    selected_color "#0099cc"
 
 screen director_lines(state):
 
@@ -289,30 +290,74 @@ screen director_show(state):
     $ statement = director.get_statement()
 
     vbox:
-        hbox:
-            box_wrap True
-
-            label "tag:"
-
-            for t in director.get_tags():
-                textbutton "[t]" action director.SetTag(t)
-
-
-        null height 8
 
         hbox:
-            box_wrap True
 
-            label "attributes:"
+            text "tag:":
+                min_width 150
+                text_align 1.0
+                style "director_text"
 
-            for a in director.get_attributes():
-                textbutton "[a]" action director.ToggleAttribute(a)
+            null width 20
 
-        null height 8
+            hbox:
+                box_wrap True
+                spacing 20
 
-        if statement:
-            text "[statement!q]"
-            textbutton "done" action director.Commit()
+                for t in director.get_tags():
+                    textbutton "[t]":
+                        action director.SetTag(t)
+                        style "director_button"
+                        ypadding 0
+
+        hbox:
+
+            text "attributes:":
+                min_width 150
+                text_align 1.0
+                style "director_text"
+
+            null width 20
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.get_attributes():
+                    textbutton "[t]":
+                        action director.ToggleAttribute(t)
+                        style "director_button"
+                        ypadding 0
+
+
+        hbox:
+
+            text "code:":
+                min_width 150
+                text_align 1.0
+                style "director_text"
+
+            null width 20
+
+            if statement:
+
+                text "[statement!q]":
+                    min_width 150
+                    text_align 1.0
+                    style "director_text"
+
+
+        hbox:
+
+            text " ":
+                min_width 150
+                text_align 1.0
+                style "director_text"
+
+            null width 20
+
+            if statement:
+                textbutton "done" action director.Commit()
 
 screen director():
 
