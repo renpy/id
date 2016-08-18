@@ -39,6 +39,9 @@ init python in director:
         # Has the new line been added to ast.
         state.added_statement = None
 
+        # Are we changing the script? (Does the node needed to be removed?)
+        state.change = False
+
         renpy.session["director"] = state
 
     class Add(Action):
@@ -57,7 +60,23 @@ init python in director:
             state.attributes = [ ]
             state.added_statement = None
 
+            state.change = False
+
             update_add()
+
+    class Change(Action):
+
+        def __init__(self, filename, linenumber, node):
+            self.filename = filename
+            self.linenumber = linenumber
+
+            state.mode = "show"
+            state.tag = node.imspec[0][0]
+            state.attributes = list(node.imspec[0][1:])
+            state.added_statement = True
+
+            state.change = True
+
 
     class SetTag(Action):
 
@@ -109,10 +128,14 @@ init python in director:
         # the actions used to edit those lines.
         state.lines = [ ]
 
-        for filename, line, stmt in lines[:30]:
+        print "----"
 
-            if stmt not in [ "Show", "Scene", "Say" ]:
+        for filename, line, node in lines[:30]:
+
+            if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
                 continue
+
+            print node
 
             if filename.startswith("renpy/"):
                 continue
@@ -125,12 +148,24 @@ init python in director:
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
 
+            add_action = Add(filename, line),
+
+            if isinstance(node, renpy.ast.Show):
+                change_action = Change(filename, line, node)
+                remove_action = Remove(filename, line)
+            else:
+                change_action = None
+                remove_action = None
+
             state.lines.append((
                 pos,
                 text,
-                Add(filename, line),
-                Remove(filename, line)
+                add_action,
+                change_action,
+                remove_action,
             ))
+
+        print state.lines
 
         # Show the director screen.
         if renpy.context_nesting_level() == 0:
@@ -228,6 +263,9 @@ init python in director:
         def __call__(self):
             statement = get_statement()
 
+            if state.change:
+                renpy.scriptedit.remove_line(state.filename, state.linenumber)
+
             if statement:
                 renpy.scriptedit.insert_line_before(statement, state.filename, state.linenumber)
 
@@ -255,7 +293,7 @@ screen director_lines(state):
 
     vbox:
 
-        for line_pos, line_text, add_action, remove_action in state.lines:
+        for line_pos, line_text, add_action, change_action, remove_action in state.lines:
 
             hbox:
                 text " ":
@@ -272,6 +310,8 @@ screen director_lines(state):
                     style "director_text"
 
                 null width 20
+
+                textbutton "change" action change_action style "director_button"
 
                 text "[line_text]":
                     style "director_text"
