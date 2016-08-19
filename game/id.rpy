@@ -289,10 +289,12 @@ style director_label
 style director_label_text is director_text:
     bold True
 
-style director_button is _button
+style director_button is empty
 
-style director_button_text is _button_text:
-    size 20
+style director_button_text is director_text:
+    color "#405060"
+    hover_color "#048"
+    insensitive_color "#00000020"
     selected_color "#0099cc"
 
 screen director_lines(state):
@@ -421,9 +423,6 @@ screen director():
             use director_lines(state)
         elif state.mode == "show" or state.mode == "scene":
             use director_show(state)
-
-    text "[state.mode]":
-        xpos 100 ypos 100
 
 
 
