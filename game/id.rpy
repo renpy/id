@@ -70,12 +70,21 @@ init python in director:
             self.filename = filename
             self.linenumber = linenumber
 
+            self.tag = node.imspec[0][0]
+            self.attributes = list(node.imspec[0][1:])
+
+        def __call__(self):
+            state.filename = self.filename
+            state.linenumber = self.linenumber
+
             state.mode = "show"
-            state.tag = node.imspec[0][0]
-            state.attributes = list(node.imspec[0][1:])
+            state.tag = self.tag
+            state.attributes = self.attributes
             state.added_statement = True
 
             state.change = True
+
+            update_add()
 
 
     class SetTag(Action):
@@ -128,14 +137,10 @@ init python in director:
         # the actions used to edit those lines.
         state.lines = [ ]
 
-        print "----"
-
         for filename, line, node in lines[:30]:
 
             if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
                 continue
-
-            print node
 
             if filename.startswith("renpy/"):
                 continue
@@ -201,6 +206,8 @@ init python in director:
                 return
 
             renpy.session["compile"] = True
+            renpy.session["_greedy_rollback"] = True
+
             state.active = True
 
             store._reload_game()
@@ -415,7 +422,8 @@ screen director():
         elif state.mode == "show" or state.mode == "scene":
             use director_show(state)
 
-
+    text "[state.mode]":
+        xpos 100 ypos 100
 
 
 
