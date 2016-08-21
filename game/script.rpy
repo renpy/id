@@ -14,7 +14,6 @@ label start:
     e "This is nice, but you know what would make this game nicer?"
 
     show eileen happy
-
     e "If I showed up right about now."
 
     e "That's way better, isn't it?"

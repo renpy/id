@@ -32,9 +32,11 @@ init python in director:
 
         # The tag we're updating.
         state.tag = ""
+        state.original_tag = ""
 
         # The attributes of the image we're updating.
         state.attributes = [ ]
+        state.original_attributes = [ ]
 
         # Has the new line been added to ast.
         state.added_statement = None
@@ -58,6 +60,8 @@ init python in director:
             state.mode = "show"
             state.tag = None
             state.attributes = [ ]
+            state.original_tag = None
+            state.original_attributes = [ ]
             state.added_statement = None
 
             state.change = False
@@ -80,6 +84,8 @@ init python in director:
             state.mode = "show"
             state.tag = self.tag
             state.attributes = self.attributes
+            state.original_tag = self.tag
+            state.original_attributes = self.attributes
             state.added_statement = True
 
             state.change = True
@@ -271,6 +277,29 @@ init python in director:
             renpy.clear_line_log()
             renpy.rollback(checkpoints=0, force=True, greedy=True)
 
+    class Reset(Action):
+
+        def __call__(self):
+
+            print state.attributes, state.original_attributes
+
+            state.tag = state.original_tag
+            state.attributes = state.original_attributes
+
+            update_add()
+
+    class Cancel(Action):
+
+        def __call__(self):
+
+            state.tag = state.original_tag
+            state.attributes = state.original_attributes
+
+            state.mode = "lines"
+
+            renpy.clear_line_log()
+            update_add()
+
 
 style director_text is _text:
     size 20
@@ -396,8 +425,13 @@ screen director_show(state):
 
             null width 20
 
-            if statement:
+            hbox:
+                spacing 20
+
                 textbutton "done" action If(statement, director.Commit())
+                textbutton "reset" action director.Reset()
+                textbutton "cancel" action director.Cancel()
+
 
 screen director():
 
