@@ -117,12 +117,6 @@ init python in director:
         def get_selected(self):
             return self.attribute in state.attributes
 
-    class Remove(Action):
-
-        def __init__(self, filename, line):
-            self.filename = filename
-            self.line = line
-
     def interact():
 
         # Update the line log.
@@ -157,17 +151,14 @@ init python in director:
 
             if isinstance(node, renpy.ast.Show):
                 change_action = Change(filename, line, node)
-                remove_action = Remove(filename, line)
             else:
                 change_action = None
-                remove_action = None
 
             state.lines.append((
                 pos,
                 text,
                 add_action,
                 change_action,
-                remove_action,
             ))
 
         print state.lines
@@ -302,7 +293,7 @@ screen director_lines(state):
 
     vbox:
 
-        for line_pos, line_text, add_action, change_action, remove_action in state.lines:
+        for line_pos, line_text, add_action, change_action in state.lines:
 
             hbox:
                 text " ":
