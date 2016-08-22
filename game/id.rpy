@@ -124,7 +124,6 @@ init python in director:
             return self.attribute in state.attributes
 
     def interact():
-
         # Update the line log.
         lines = renpy.get_line_log()
 
@@ -166,8 +165,6 @@ init python in director:
                 add_action,
                 change_action,
             ))
-
-        print state.lines
 
         # Show the director screen.
         if renpy.context_nesting_level() == 0:
@@ -232,6 +229,10 @@ init python in director:
         return rv
 
     def get_statement():
+
+        if state.tag is None:
+            return None
+
         l = renpy.get_available_image_attributes(state.tag, state.attributes)
 
         if len(l) != 1:
@@ -281,8 +282,6 @@ init python in director:
 
         def __call__(self):
 
-            print state.attributes, state.original_attributes
-
             state.tag = state.original_tag
             state.attributes = state.original_attributes
 
@@ -300,6 +299,18 @@ init python in director:
             renpy.clear_line_log()
             update_add()
 
+    class Remove(Action):
+
+        def __call__(self):
+
+            if state.change:
+                renpy.scriptedit.remove_line(state.filename, state.linenumber)
+
+            state.tag = None
+            state.mode = "lines"
+
+            renpy.clear_line_log()
+            update_add()
 
 style director_text is _text:
     size 20
@@ -431,6 +442,7 @@ screen director_show(state):
                 textbutton "done" action If(statement, director.Commit())
                 textbutton "reset" action director.Reset()
                 textbutton "cancel" action director.Cancel()
+                textbutton "remove" action director.Remove()
 
 
 screen director():
