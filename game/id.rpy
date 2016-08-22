@@ -85,7 +85,7 @@ init python in director:
             state.tag = self.tag
             state.attributes = self.attributes
             state.original_tag = self.tag
-            state.original_attributes = self.attributes
+            state.original_attributes = list(self.attributes)
             state.added_statement = True
 
             state.change = True
