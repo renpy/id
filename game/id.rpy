@@ -455,6 +455,7 @@ screen director():
         style_prefix ""
         yfill False
         yalign 0.0
+        background "#d0d0d0d0"
 
         if state.mode == "lines":
             use director_lines(state)
