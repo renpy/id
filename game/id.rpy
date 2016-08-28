@@ -145,9 +145,10 @@ init python in director:
                 continue
 
             text = renpy.scriptedit.get_line_text(filename, line)
-            stripped = text.lstrip(" ")
-            indent = len(text) - len(stripped)
-            text = " " * (indent // 4) + stripped
+#             stripped = text.lstrip(" ")
+#             indent = len(text) - len(stripped)
+#             text = " " * (indent // 4) + stripped
+            text = text.strip()
 
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
@@ -328,10 +329,23 @@ style director_button_text is director_text:
     insensitive_color "#00000020"
     selected_color "#0099cc"
 
+
+style director_edit_button is director_button:
+    xsize 40
+    xpadding 10
+
+style director_edit_button_text is director_button_text:
+    font "DejaVuSans.ttf"
+    xalign 0.5
+
+
 screen director_lines(state):
 
+    frame:
+        style "empty"
+        background Solid("#fff8", xsize=20, xpos=189)
 
-    vbox:
+        has vbox
 
         for line_pos, line_text, add_action, change_action in state.lines:
 
@@ -340,18 +354,19 @@ screen director_lines(state):
                     min_width 179
                     style "director_text"
 
-                textbutton "add" action add_action style "director_button"
+                textbutton "+" action add_action style "director_edit_button"
 
             hbox:
 
                 text "[line_pos]":
-                    min_width 150
+                    min_width 179
                     text_align 1.0
                     style "director_text"
 
-                null width 20
-
-                textbutton "change" action change_action style "director_button"
+                if change_action:
+                    textbutton "✎" action change_action style "director_edit_button"
+                else:
+                    textbutton " " action change_action style "director_edit_button"
 
                 text "[line_text]":
                     style "director_text"
@@ -361,7 +376,15 @@ screen director_lines(state):
                 min_width 179
                 style "director_text"
 
-            textbutton "done" action Hide("director")
+            textbutton " ":
+                action None
+                style "director_edit_button"
+                ysize 40
+
+            hbox:
+                yalign 1.0
+
+                textbutton "done" action Hide("director")
 
 
 
@@ -456,6 +479,7 @@ screen director():
         yfill False
         yalign 0.0
         background "#d0d0d0d0"
+        ypadding 0
 
         if state.mode == "lines":
             use director_lines(state)
