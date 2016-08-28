@@ -20,6 +20,9 @@ init python in director:
         # Is the directory currently active.
         state.active = False
 
+        # Should the director screen be shown.
+        state.show_director = False
+
         # The list of lines we've seen recently.
         state.lines = [ ]
 
@@ -168,9 +171,12 @@ init python in director:
             ))
 
         # Show the director screen.
-        if renpy.context_nesting_level() == 0:
+        if state.show_director and (renpy.context_nesting_level() == 0):
             if not renpy.get_screen("director"):
                 renpy.show_screen("director")
+        else:
+            if renpy.get_screen("director"):
+                renpy.hide_screen("director")
 
 
     def init():
@@ -197,7 +203,15 @@ init python in director:
         """
 
         def __call__(self):
+
+            state.show_director = True
+            state.mode = "lines"
+
             if state.active:
+
+                renpy.show_screen("director")
+
+                renpy.restart_interaction()
                 return
 
             renpy.session["compile"] = True
@@ -208,7 +222,17 @@ init python in director:
             store._reload_game()
 
         def get_sensitive(self):
-            return not state.active
+            return (not state.active) or (not state.show_director)
+
+    class Stop(Action):
+
+        def __call__(self):
+            state.show_director = False
+
+            if renpy.get_screen("director"):
+                renpy.hide_screen("director")
+
+            renpy.restart_interaction()
 
     def get_tags():
         rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist ]
@@ -384,7 +408,7 @@ screen director_lines(state):
             hbox:
                 yalign 1.0
 
-                textbutton "done" action Hide("director")
+                textbutton "done" action director.Stop()
 
 
 
