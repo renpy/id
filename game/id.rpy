@@ -9,9 +9,6 @@ init python in director:
         "vtext",
     }
 
-    if not store.renpy.renpy.game.args.compile:
-        raise Exception("Run me with --compile!")
-
     state = renpy.session.get("director", None)
     if state is None:
 
