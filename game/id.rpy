@@ -110,8 +110,14 @@ init python in director:
             self.tag = tag
 
         def __call__(self):
-            state.tag = self.tag
-            state.attributes = [ ]
+
+            if state.tag != self.tag:
+
+                state.tag = self.tag
+                state.attributes = [ ]
+
+                state.mode = "attributes"
+
 
             update_add()
 
@@ -434,7 +440,9 @@ screen director_lines(state):
             hbox:
                 yalign 1.0
 
-                textbutton "done" action director.Stop()
+                textbutton "Done":
+                    action director.Stop()
+                    style "director_action_button"
 
 
 
@@ -447,8 +455,8 @@ screen director_statement(state):
         style_prefix "director_statement"
 
         textbutton "[state.kind] "
-        textbutton "[tag] "
-        textbutton "[attributes] "
+        textbutton "[tag] " action SetField(state, "mode", "tag")
+        textbutton "[attributes] " action SetField(state, "mode", "attributes")
 
     null height 14
 
@@ -463,9 +471,9 @@ screen director_footer(state):
         spacing 26
 
         if state.change:
-            textbutton "Add" action If(director.get_statement(), director.Commit())
-        else:
             textbutton "Change" action If(director.get_statement(), director.Commit())
+        else:
+            textbutton "Add" action If(director.get_statement(), director.Commit())
 
 
         textbutton "Cancel" action director.Cancel()
@@ -505,15 +513,19 @@ screen director_attributes(state):
 
         text "attributes:"
 
-        hbox:
-            box_wrap True
-            spacing 20
+        frame:
+            style "empty"
+            left_margin 10
 
-            for t in director.get_attributes():
-                textbutton "[t]":
-                    action director.ToggleAttribute(t)
-                    style "director_button"
-                    ypadding 0
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.get_attributes():
+                    textbutton "[t]":
+                        action director.ToggleAttribute(t)
+                        style "director_button"
+                        ypadding 0
 
         use director_footer(state)
 
