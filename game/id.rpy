@@ -10,6 +10,7 @@ init python in director:
     }
 
     state = renpy.session.get("director", None)
+
     if state is None:
 
         state = store.NoRollback()
@@ -29,6 +30,10 @@ init python in director:
         # The filename and linenumber of the line we're editing,
         state.filename = ""
         state.linenumber = 0
+
+
+        # What kind of statement is this?
+        state.kind = "show"
 
         # The tag we're updating.
         state.tag = ""
@@ -57,7 +62,8 @@ init python in director:
             state.filename = self.filename
             state.linenumber = self.linenumber
 
-            state.mode = "show"
+            state.kind = "show"
+            state.mode = "tag"
             state.tag = None
             state.attributes = [ ]
             state.original_tag = None
@@ -74,6 +80,10 @@ init python in director:
             self.filename = filename
             self.linenumber = linenumber
 
+
+            if isinstance(node, renpy.ast.Show):
+                self.kind = "show"
+
             self.tag = node.imspec[0][0]
             self.attributes = list(node.imspec[0][1:])
 
@@ -81,7 +91,8 @@ init python in director:
             state.filename = self.filename
             state.linenumber = self.linenumber
 
-            state.mode = "show"
+            state.kind = self.kind
+            state.mode = "attributes"
             state.tag = self.tag
             state.attributes = self.attributes
             state.original_tag = self.tag
@@ -334,6 +345,14 @@ init python in director:
             renpy.clear_line_log()
             update_add()
 
+style director_frame is _frame:
+    xfill True
+    yfill False
+    yalign 0.0
+    background "#d0d0d0d0"
+    ypadding 0
+
+
 style director_text is _text:
     size 20
 
@@ -358,6 +377,16 @@ style director_edit_button is director_button:
 style director_edit_button_text is director_button_text:
     font "DejaVuSans.ttf"
     xalign 0.5
+
+style director_action_button is director_button
+
+style director_action_button_text is director_button_text:
+    size 24
+
+style director_statement_button is director_button
+
+style director_statement_button_text is director_button_text:
+    size 22
 
 
 screen director_lines(state):
@@ -409,103 +438,98 @@ screen director_lines(state):
 
 
 
-screen director_show(state):
+screen director_statement(state):
 
-    $ statement = director.get_statement()
+    $ tag = state.tag or "(tag)"
+    $ attributes =  " ".join(state.attributes) or "(attributes)"
+
+    hbox:
+        style_prefix "director_statement"
+
+        textbutton "[state.kind] "
+        textbutton "[tag] "
+        textbutton "[attributes] "
+
+    null height 14
+
+screen director_footer(state):
+
+    null height 14
+
+
+    hbox:
+        style_prefix "director_action"
+
+        spacing 26
+
+        if state.change:
+            textbutton "Add" action If(director.get_statement(), director.Commit())
+        else:
+            textbutton "Change" action If(director.get_statement(), director.Commit())
+
+
+        textbutton "Cancel" action director.Cancel()
+
+        if state.change:
+            textbutton "Remove" action director.Remove()
+
+
+screen director_tag(state):
 
     vbox:
 
-        hbox:
+        use director_statement(state)
 
-            text "tag:":
-                min_width 150
-                text_align 1.0
-                style "director_text"
+        text "Tag:" size 20
 
-            null width 20
+        frame:
+            style "empty"
+            left_margin 10
 
             hbox:
+
                 box_wrap True
                 spacing 20
 
                 for t in director.get_tags():
                     textbutton "[t]":
                         action director.SetTag(t)
-                        style "director_button"
-                        ypadding 0
+
+        use director_footer(state)
+
+screen director_attributes(state):
+
+    vbox:
+
+        use director_statement(state)
+
+        text "attributes:"
 
         hbox:
+            box_wrap True
+            spacing 20
 
-            text "attributes:":
-                min_width 150
-                text_align 1.0
-                style "director_text"
+            for t in director.get_attributes():
+                textbutton "[t]":
+                    action director.ToggleAttribute(t)
+                    style "director_button"
+                    ypadding 0
 
-            null width 20
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.get_attributes():
-                    textbutton "[t]":
-                        action director.ToggleAttribute(t)
-                        style "director_button"
-                        ypadding 0
-
-
-        hbox:
-
-            text "code:":
-                min_width 150
-                text_align 1.0
-                style "director_text"
-
-            null width 20
-
-            if statement:
-
-                text "[statement!q]":
-                    min_width 150
-                    text_align 1.0
-                    style "director_text"
-
-
-        hbox:
-
-            text " ":
-                min_width 150
-                text_align 1.0
-                style "director_text"
-
-            null width 20
-
-            hbox:
-                spacing 20
-
-                textbutton "done" action If(statement, director.Commit())
-                textbutton "reset" action director.Reset()
-                textbutton "cancel" action director.Cancel()
-                textbutton "remove" action director.Remove()
+        use director_footer(state)
 
 
 screen director():
 
-    style_group "director"
-
     $ state = director.state
 
     frame:
-        style_prefix ""
-        yfill False
-        yalign 0.0
-        background "#d0d0d0d0"
-        ypadding 0
+        style_prefix "director"
 
         if state.mode == "lines":
             use director_lines(state)
-        elif state.mode == "show" or state.mode == "scene":
-            use director_show(state)
-
+        elif state.mode == "tag":
+            use director_tag(state)
+        elif state.mode == "attributes":
+            use director_attributes(state)
 
 
