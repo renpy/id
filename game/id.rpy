@@ -257,17 +257,26 @@ init python in director:
         if not state.tag:
             return [ ]
 
-        rv = set()
+        import collections
 
-        for i in renpy.get_available_image_attributes(state.tag, state.attributes):
-            for j in i:
-                rv.add(j)
+        attrcount = collections.defaultdict(int)
+        attrtotalpos = collections.defaultdict(float)
 
-        rv = list(rv)
-        rv.sort(key = lambda a : a.lower())
-        return rv
 
-    def get_statement():
+        for attrlist in renpy.get_available_image_attributes(state.tag, [ ]):
+            for i, attr in enumerate(attrlist):
+                attrcount[attr] += 1
+                attrtotalpos[attr] += i
+
+        l = [ ]
+
+        for attr in attrcount:
+            l.append((attrtotalpos[attr] / attrcount[attr], attr))
+
+        l.sort()
+        return [ i[1] for i in l ]
+
+    def get_image_attributes():
 
         if state.tag is None:
             return None
@@ -277,12 +286,39 @@ init python in director:
         if len(l) != 1:
             return None
 
+        if len(l[0]) != len(state.attributes):
+            return None
+
+        return l[0]
+
+    def get_statement():
+
+        if state.tag is None:
+            return None
+
+        l = renpy.get_available_image_attributes(state.tag, state.attributes)
+
+        attributes = get_image_attributes()
+
+        if attributes is None:
+            return
+
         rv = [ "show" ]
 
         rv.append(state.tag)
-        rv.extend(l[0])
+        rv.extend(attributes)
 
         return " ".join(rv)
+
+    def get_ordered_attributes():
+
+        attrs = get_image_attributes()
+
+        if attrs is not None:
+            return attrs
+
+        return state.attributes
+
 
     def update_add():
 
@@ -449,7 +485,7 @@ screen director_lines(state):
 screen director_statement(state):
 
     $ tag = state.tag or "(tag)"
-    $ attributes =  " ".join(state.attributes) or "(attributes)"
+    $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
 
     hbox:
         style_prefix "director_statement"
@@ -511,7 +547,7 @@ screen director_attributes(state):
 
         use director_statement(state)
 
-        text "attributes:"
+        text "Attributes:"
 
         frame:
             style "empty"

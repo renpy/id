@@ -1,6 +1,12 @@
 ﻿# This file contains the script for the Ren'Py demo game. Execution starts at
 # the start label.
 
+
+image lucy beach happy = Placeholder()
+image lucy beach mad = Placeholder()
+image lucy uniform happy = Placeholder()
+image lucy uniform mad = Placeholder()
+
 label main_menu:
     return False
 
