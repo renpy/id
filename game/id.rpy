@@ -133,7 +133,17 @@ init python in director:
             if self.attribute in state.attributes:
                 state.attributes.remove(self.attribute)
             else:
+
                 state.attributes.append(self.attribute)
+
+                compatible = set()
+
+                for i in renpy.get_available_image_attributes(state.tag, [ self.attribute ]):
+                    for j in i:
+                        compatible.add(j)
+
+                state.attributes = [ i for i in state.attributes if i in compatible ]
+
 
             update_add()
 
