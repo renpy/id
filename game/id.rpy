@@ -151,9 +151,9 @@ init python in director:
             return self.attribute in state.attributes
 
     def interact():
+
         # Update the line log.
         lines = renpy.get_line_log()
-
         renpy.clear_line_log()
 
         # Update state.line to the current line.
@@ -161,9 +161,12 @@ init python in director:
 
         # State.lines is the list of lines we've just seen, along with
         # the actions used to edit those lines.
-        state.lines = [ ]
+        for _filename, _line, node in lines[-30:]:
+            if isinstance(node, renpy.ast.Say):
+                state.lines = [ ]
+                break
 
-        for filename, line, node in lines[:30]:
+        for filename, line, node in lines[-30:]:
 
             if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
                 continue
@@ -172,17 +175,14 @@ init python in director:
                 continue
 
             text = renpy.scriptedit.get_line_text(filename, line)
-#             stripped = text.lstrip(" ")
-#             indent = len(text) - len(stripped)
-#             text = " " * (indent // 4) + stripped
             text = text.strip()
 
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
 
-            add_action = Add(filename, line),
+            add_action = Add(filename, line)
 
-            if isinstance(node, renpy.ast.Show):
+            if isinstance(node, (renpy.ast.Show, renpy.ast.Scene)):
                 change_action = Change(filename, line, node)
             else:
                 change_action = None
@@ -396,6 +396,7 @@ init python in director:
 
             renpy.clear_line_log()
             update_add()
+
 
 style director_frame is _frame:
     xfill True
