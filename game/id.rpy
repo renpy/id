@@ -11,6 +11,7 @@ init python in director:
 
     state = renpy.session.get("director", None)
 
+    # Initialize the state object if it doesn't exist.
     if state is None:
 
         state = store.NoRollback()
@@ -31,9 +32,9 @@ init python in director:
         state.filename = ""
         state.linenumber = 0
 
-
         # What kind of statement is this?
-        state.kind = "show"
+        state.kind = None
+        state.original_kind = None
 
         # The tag we're updating.
         state.tag = ""
@@ -51,106 +52,11 @@ init python in director:
 
         renpy.session["director"] = state
 
-    class Add(Action):
-
-        def __init__(self, filename, linenumber):
-            self.filename = filename
-            self.linenumber = linenumber
-
-        def __call__(self):
-
-            state.filename = self.filename
-            state.linenumber = self.linenumber
-
-            state.kind = "show"
-            state.mode = "tag"
-            state.tag = None
-            state.attributes = [ ]
-            state.original_tag = None
-            state.original_attributes = [ ]
-            state.added_statement = None
-
-            state.change = False
-
-            update_add()
-
-    class Change(Action):
-
-        def __init__(self, filename, linenumber, node):
-            self.filename = filename
-            self.linenumber = linenumber
-
-
-            if isinstance(node, renpy.ast.Show):
-                self.kind = "show"
-
-            self.tag = node.imspec[0][0]
-            self.attributes = list(node.imspec[0][1:])
-
-        def __call__(self):
-            state.filename = self.filename
-            state.linenumber = self.linenumber
-
-            state.kind = self.kind
-            state.mode = "attributes"
-            state.tag = self.tag
-            state.attributes = self.attributes
-            state.original_tag = self.tag
-            state.original_attributes = list(self.attributes)
-            state.added_statement = True
-
-            state.change = True
-
-            update_add()
-
-
-    class SetTag(Action):
-
-        def __init__(self, tag):
-            self.tag = tag
-
-        def __call__(self):
-
-            if state.tag != self.tag:
-
-                state.tag = self.tag
-                state.attributes = [ ]
-
-                state.mode = "attributes"
-
-
-            update_add()
-
-        def get_selected(self):
-            return self.tag == state.tag
-
-    class ToggleAttribute(Action):
-
-        def __init__(self, attribute):
-            self.attribute = attribute
-
-        def __call__(self):
-            if self.attribute in state.attributes:
-                state.attributes.remove(self.attribute)
-            else:
-
-                state.attributes.append(self.attribute)
-
-                compatible = set()
-
-                for i in renpy.get_available_image_attributes(state.tag, [ self.attribute ]):
-                    for j in i:
-                        compatible.add(j)
-
-                state.attributes = [ i for i in state.attributes if i in compatible ]
-
-
-            update_add()
-
-        def get_selected(self):
-            return self.attribute in state.attributes
-
     def interact():
+        """
+        This is called once per interaction, to update the list of lines
+        being displayed, and also to show or hide the director as appropriate.
+        """
 
         # Update the line log.
         lines = renpy.get_line_log()
@@ -180,10 +86,10 @@ init python in director:
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
 
-            add_action = Add(filename, line)
+            add_action = AddStatement(filename, line)
 
             if isinstance(node, (renpy.ast.Show, renpy.ast.Scene)):
-                change_action = Change(filename, line, node)
+                change_action = ChangeStatement(filename, line, node)
             else:
                 change_action = None
 
@@ -204,6 +110,11 @@ init python in director:
 
 
     def init():
+        """
+        This is called once at game start, to reconfigured Ren'Py to
+        support the ID.
+        """
+
         config.clear_lines = False
         config.line_log = True
 
@@ -213,6 +124,10 @@ init python in director:
         init()
 
     def command():
+        """
+        This can be used to invoke the ID from the command line.
+        """
+
         if not state.active:
             state.active = True
             init()
@@ -221,9 +136,137 @@ init python in director:
 
     renpy.arguments.register_command("director", command)
 
+
+
+    def get_statement():
+        """
+        If a statement is defined enough to implement, returns the text
+        that can be added to the AST. Otherwise, returns None.
+        """
+
+        if state.kind is None:
+            return None
+
+        if state.tag is None:
+            return None
+
+        l = renpy.get_available_image_attributes(state.tag, state.attributes)
+
+        attributes = get_image_attributes()
+
+        if attributes is None:
+            return
+
+        rv = [ "show" ]
+
+        rv.append(state.tag)
+        rv.extend(attributes)
+
+        return " ".join(rv)
+
+    def update_ast():
+        """
+        Updates the abstract syntax tree to match the current state, forcing
+        a rollback if something significant has changed. This always forces
+        an interaction restart.
+        """
+
+        statement = get_statement()
+
+        if state.added_statement == statement:
+            renpy.restart_interaction()
+            return
+
+        if state.added_statement is not None:
+            renpy.scriptedit.remove_from_ast(state.filename, state.linenumber)
+
+        if statement:
+            renpy.scriptedit.add_to_ast_before(statement, state.filename, state.linenumber)
+
+        state.added_statement = statement
+
+        renpy.rollback(checkpoints=0, force=True, greedy=True)
+
+
+    # Screen support functions #################################################
+
+    def get_tags():
+        """
+        Returns a list of tags that are valid for the current statement kind.
+        """
+
+        rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist ]
+        rv.sort(key=lambda a : a.lower())
+        return rv
+
+    def get_attributes():
+        """
+        Returns a list of attributes that are valid for the current tag.
+        """
+
+        if not state.tag:
+            return [ ]
+
+        import collections
+
+        attrcount = collections.defaultdict(int)
+        attrtotalpos = collections.defaultdict(float)
+
+
+        for attrlist in renpy.get_available_image_attributes(state.tag, [ ]):
+            for i, attr in enumerate(attrlist):
+                attrcount[attr] += 1
+                attrtotalpos[attr] += i
+
+        l = [ ]
+
+        for attr in attrcount:
+            l.append((attrtotalpos[attr] / attrcount[attr], attr))
+
+        l.sort()
+        return [ i[1] for i in l ]
+
+    def get_image_attributes():
+        """
+        Returns the list of attributes in the current image, or None if
+        no image is known.
+        """
+
+        if state.tag is None:
+            return None
+
+        l = renpy.get_available_image_attributes(state.tag, state.attributes)
+
+        if len(l) != 1:
+            return None
+
+        if len(l[0]) != len(state.attributes):
+            return None
+
+        return l[0]
+
+    def get_ordered_attributes():
+        """
+        Returns the list of attributes in the order they appear in the
+        current image (if known), or in the order they were selected
+        otherwise.
+        """
+
+        attrs = get_image_attributes()
+
+        if attrs is not None:
+            return attrs
+
+        return state.attributes
+
+
+
+
+    # Actions ##################################################################
+
     class Start(Action):
         """
-        The action that starts the director.
+        This action starts the director and displays the lines screen.
         """
 
         def __call__(self):
@@ -249,6 +292,9 @@ init python in director:
             return (not state.active) or (not state.show_director)
 
     class Stop(Action):
+        """
+        This hides the director interface.
+        """
 
         def __call__(self):
             state.show_director = False
@@ -258,97 +304,128 @@ init python in director:
 
             renpy.restart_interaction()
 
-    def get_tags():
-        rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist ]
-        rv.sort(key=lambda a : a.lower())
-        return rv
 
-    def get_attributes():
-        if not state.tag:
-            return [ ]
+    class AddStatement(Action):
+        """
+        An action that adds a new statement before `filename`:`linenumber`.
+        """
 
-        import collections
+        def __init__(self, filename, linenumber):
+            self.filename = filename
+            self.linenumber = linenumber
 
-        attrcount = collections.defaultdict(int)
-        attrtotalpos = collections.defaultdict(float)
+        def __call__(self):
+
+            state.filename = self.filename
+            state.linenumber = self.linenumber
+
+            state.kind = None
+            state.mode = statement
+            state.tag = None
+            state.attributes = [ ]
+            state.original_tag = None
+            state.original_attributes = [ ]
+            state.added_statement = None
+
+            state.change = False
+
+            update_ast()
+
+    class ChangeStatement(Action):
+        """
+        An action that changes the statement at `filename`:`linenumber`.
+
+        `node`
+            Should be the AST node corresponding to that statement.
+        """
+
+        def __init__(self, filename, linenumber, node):
+            self.filename = filename
+            self.linenumber = linenumber
+
+            if isinstance(node, renpy.ast.Show):
+                self.kind = "show"
+            elif isinstance(node, renpy.ast.Scene):
+                self.kind = "scene"
+
+            self.tag = node.imspec[0][0]
+            self.attributes = list(node.imspec[0][1:])
+
+        def __call__(self):
+            state.filename = self.filename
+            state.linenumber = self.linenumber
+
+            state.kind = self.kind
+            state.mode = "attributes"
+            state.tag = self.tag
+            state.attributes = self.attributes
+            state.original_tag = self.tag
+            state.original_attributes = list(self.attributes)
+            state.added_statement = True
+
+            state.change = True
+
+            update_ast()
+
+    class SetTag(Action):
+        """
+        An action that sets the image tag.
+        """
+
+        def __init__(self, tag):
+            self.tag = tag
+
+        def __call__(self):
+
+            if state.tag != self.tag:
+
+                state.tag = self.tag
+                state.attributes = [ ]
+
+            state.mode = "attributes"
+
+            update_ast()
+
+        def get_selected(self):
+            return self.tag == state.tag
+
+    class ToggleAttribute(Action):
+        """
+        This action toggles on and off an attribute. If an attribute being
+        toggled on conflicts with other attributes, those attributes are
+        removed.
+
+        Then the AST is updated.
+        """
+
+        def __init__(self, attribute):
+            self.attribute = attribute
+
+        def __call__(self):
+            if self.attribute in state.attributes:
+                state.attributes.remove(self.attribute)
+            else:
+
+                state.attributes.append(self.attribute)
+
+                compatible = set()
+
+                for i in renpy.get_available_image_attributes(state.tag, [ self.attribute ]):
+                    for j in i:
+                        compatible.add(j)
+
+                state.attributes = [ i for i in state.attributes if i in compatible ]
 
 
-        for attrlist in renpy.get_available_image_attributes(state.tag, [ ]):
-            for i, attr in enumerate(attrlist):
-                attrcount[attr] += 1
-                attrtotalpos[attr] += i
+            update_ast()
 
-        l = [ ]
-
-        for attr in attrcount:
-            l.append((attrtotalpos[attr] / attrcount[attr], attr))
-
-        l.sort()
-        return [ i[1] for i in l ]
-
-    def get_image_attributes():
-
-        if state.tag is None:
-            return None
-
-        l = renpy.get_available_image_attributes(state.tag, state.attributes)
-
-        if len(l) != 1:
-            return None
-
-        if len(l[0]) != len(state.attributes):
-            return None
-
-        return l[0]
-
-    def get_statement():
-
-        if state.tag is None:
-            return None
-
-        l = renpy.get_available_image_attributes(state.tag, state.attributes)
-
-        attributes = get_image_attributes()
-
-        if attributes is None:
-            return
-
-        rv = [ "show" ]
-
-        rv.append(state.tag)
-        rv.extend(attributes)
-
-        return " ".join(rv)
-
-    def get_ordered_attributes():
-
-        attrs = get_image_attributes()
-
-        if attrs is not None:
-            return attrs
-
-        return state.attributes
-
-
-    def update_add():
-
-        statement = get_statement()
-
-        if state.added_statement == statement:
-            renpy.restart_interaction()
-            return
-
-        if state.added_statement is not None:
-            renpy.scriptedit.remove_from_ast(state.filename, state.linenumber)
-
-        if statement:
-            renpy.scriptedit.add_to_ast_before(statement, state.filename, state.linenumber)
-
-        state.added_statement = statement
-
-        renpy.rollback(checkpoints=0, force=True, greedy=True)
+        def get_selected(self):
+            return self.attribute in state.attributes
 
     class Commit(Action):
+        """
+        Commits the current statement to the .rpy files.
+        """
 
         def __call__(self):
             statement = get_statement()
@@ -363,28 +440,49 @@ init python in director:
             renpy.clear_line_log()
             renpy.rollback(checkpoints=0, force=True, greedy=True)
 
+        def get_sensitive(self):
+            return get_statement()
+
     class Reset(Action):
+        """
+        This action resets the AST to what it was when we started adjusting the
+        statement.
+        """
 
         def __call__(self):
 
+            state.kind = state.original_kind
             state.tag = state.original_tag
             state.attributes = state.original_attributes
 
-            update_add()
+            if state.kind is None:
+                state.mode = "kind"
+            elif state.tag is None:
+                state.mode = "tag"
+
+            update_ast()
 
     class Cancel(Action):
+        """
+        This action cances the operation, resetting the AST and returning to
+        the lines screen.
+        """
 
         def __call__(self):
 
+            state.kind = state.original_kind
             state.tag = state.original_tag
             state.attributes = state.original_attributes
 
             state.mode = "lines"
 
             renpy.clear_line_log()
-            update_add()
+            update_ast()
 
     class Remove(Action):
+        """
+        This action removes the current line from the AST and the script.
+        """
 
         def __call__(self):
 
@@ -395,8 +493,10 @@ init python in director:
             state.mode = "lines"
 
             renpy.clear_line_log()
-            update_add()
+            update_ast()
 
+
+# Styles and screens ###########################################################
 
 style director_frame is _frame:
     xfill True
@@ -518,9 +618,9 @@ screen director_footer(state):
         spacing 26
 
         if state.change:
-            textbutton "Change" action If(director.get_statement(), director.Commit())
+            textbutton "Change" action director.Commit()
         else:
-            textbutton "Add" action If(director.get_statement(), director.Commit())
+            textbutton "Add" action director.Commit()
 
 
         textbutton "Cancel" action director.Cancel()
