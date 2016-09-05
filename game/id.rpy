@@ -9,6 +9,9 @@ init python in director:
         "vtext",
     }
 
+    # A set of tags that should only be used with the scene statement.
+    scene_tags = { "bg" }
+
     state = renpy.session.get("director", None)
 
     # Initialize the state object if it doesn't exist.
@@ -157,7 +160,7 @@ init python in director:
         if attributes is None:
             return
 
-        rv = [ "show" ]
+        rv = [ state.kind ]
 
         rv.append(state.tag)
         rv.extend(attributes)
@@ -187,6 +190,22 @@ init python in director:
 
         renpy.rollback(checkpoints=0, force=True, greedy=True)
 
+    def pick_tag():
+        """
+        If there is only one valid tag, choose it and move to attribute mode.
+        """
+
+        tags = get_tags()
+
+        if state.mode != "tag":
+            return
+
+        if len(tags) != 1:
+            return
+
+        state.tag = tags[0]
+        state.mode = "attributes"
+
 
     # Screen support functions #################################################
 
@@ -195,7 +214,13 @@ init python in director:
         Returns a list of tags that are valid for the current statement kind.
         """
 
-        rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist ]
+        if state.kind == "scene":
+            rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i in scene_tags ]
+        elif state.kind == "show":
+            rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
+        else:
+            rv = [ ]
+
         rv.sort(key=lambda a : a.lower())
         return rv
 
@@ -320,7 +345,7 @@ init python in director:
             state.linenumber = self.linenumber
 
             state.kind = None
-            state.mode = statement
+            state.mode = "kind"
             state.tag = None
             state.attributes = [ ]
             state.original_tag = None
@@ -364,6 +389,24 @@ init python in director:
             state.added_statement = True
 
             state.change = True
+
+            update_ast()
+
+    class SetKind(Action):
+
+        def __init__(self, kind):
+            self.kind = kind
+
+        def __call__(self):
+
+            if self.kind != state.kind:
+                state.kind = self.kind
+                state.tag = None
+                state.attributes = [ ]
+
+            if self.kind in ("scene", "show"):
+                state.mode = "tag"
+                pick_tag()
 
             update_ast()
 
@@ -595,13 +638,14 @@ screen director_lines(state):
 
 screen director_statement(state):
 
+    $ kind = state.kind or "(statement)"
     $ tag = state.tag or "(tag)"
     $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
 
     hbox:
         style_prefix "director_statement"
 
-        textbutton "[state.kind] "
+        textbutton "[kind] " action SetField(state, "mode", "kind")
         textbutton "[tag] " action SetField(state, "mode", "tag")
         textbutton "[attributes] " action SetField(state, "mode", "attributes")
 
@@ -628,6 +672,28 @@ screen director_footer(state):
         if state.change:
             textbutton "Remove" action director.Remove()
 
+screen director_kind(state):
+
+    vbox:
+
+        use director_statement(state)
+
+        text "Statement:" size 20
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+
+                box_wrap True
+                spacing 20
+
+                textbutton "scene" action director.SetKind("scene")
+                textbutton "show" action director.SetKind("show")
+                # textbutton "with" action SetKind("with")
+
+        use director_footer(state)
 
 screen director_tag(state):
 
@@ -686,6 +752,8 @@ screen director():
 
         if state.mode == "lines":
             use director_lines(state)
+        elif state.mode == "kind":
+            use director_kind(state)
         elif state.mode == "tag":
             use director_tag(state)
         elif state.mode == "attributes":
