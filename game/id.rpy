@@ -12,6 +12,8 @@ init python in director:
     # A set of tags that should only be used with the scene statement.
     scene_tags = { "bg" }
 
+    transforms = [ "left", "center", "right" ]
+
     state = renpy.session.get("director", None)
 
     # Initialize the state object if it doesn't exist.
@@ -46,6 +48,10 @@ init python in director:
         # The attributes of the image we're updating.
         state.attributes = [ ]
         state.original_attributes = [ ]
+
+        # The transforms applied to the image.
+        state.transforms = [ ]
+        state.original_transforms = [ ]
 
         # Has the new line been added to ast.
         state.added_statement = None
@@ -140,7 +146,6 @@ init python in director:
     renpy.arguments.register_command("director", command)
 
 
-
     def get_statement():
         """
         If a statement is defined enough to implement, returns the text
@@ -165,7 +170,12 @@ init python in director:
         rv.append(state.tag)
         rv.extend(attributes)
 
-        return " ".join(rv)
+        rv = " ".join(rv)
+
+        if state.transforms:
+            rv += " at " + ", ".join(state.transforms)
+
+        return rv
 
     def update_ast():
         """
@@ -251,6 +261,13 @@ init python in director:
         l.sort()
         return [ i[1] for i in l ]
 
+    def get_transforms():
+        """
+        Returns a list of transforms that are valid for the current tag.
+        """
+
+        return transforms
+
     def get_image_attributes():
         """
         Returns the list of attributes in the current image, or None if
@@ -283,8 +300,6 @@ init python in director:
             return attrs
 
         return state.attributes
-
-
 
 
     # Actions ##################################################################
@@ -347,11 +362,13 @@ init python in director:
             state.kind = None
             state.mode = "kind"
             state.tag = None
-            state.attributes = [ ]
             state.original_tag = None
+            state.attributes = [ ]
             state.original_attributes = [ ]
-            state.added_statement = None
+            state.transforms = [ ]
+            state.original_transforms = [ ]
 
+            state.added_statement = None
             state.change = False
 
             update_ast()
@@ -386,8 +403,12 @@ init python in director:
             state.attributes = self.attributes
             state.original_tag = self.tag
             state.original_attributes = list(self.attributes)
-            state.added_statement = True
 
+            print("Need to add support for changing transforms!")
+            state.transforms = [ ]
+            state.original_transforms = [ ]
+
+            state.added_statement = True
             state.change = True
 
             update_ast()
@@ -465,6 +486,47 @@ init python in director:
         def get_selected(self):
             return self.attribute in state.attributes
 
+    class ToggleTransform(Action):
+        """
+        This action toggles to a transform, and if clicked again removes the
+        transform.
+        """
+
+        def __init__(self, transform):
+            self.transform = transform
+
+        def __call__(self):
+            if self.transform in state.transforms:
+                state.transforms.remove(self.transform)
+            else:
+                state.transforms = [ self.transform ]
+
+            update_ast()
+
+        def get_selected(self):
+            return self.transform in state.transforms
+
+    class AddTransform(Action):
+        """
+        This action adds a transform to the end of the list of transforms.
+        If clicked again, it removes the transform.
+        """
+
+        def __init__(self, transform):
+            self.transform = transform
+
+        def __call__(self):
+            if self.transform in state.transforms:
+                state.transforms.remove(self.transform)
+            else:
+                state.transforms.append(self.transform)
+
+            update_ast()
+
+        def get_selected(self):
+            return self.transform in state.transforms
+
+
     class Commit(Action):
         """
         Commits the current statement to the .rpy files.
@@ -497,6 +559,7 @@ init python in director:
             state.kind = state.original_kind
             state.tag = state.original_tag
             state.attributes = state.original_attributes
+            state.transforms = state.original_transforms
 
             if state.kind is None:
                 state.mode = "kind"
@@ -507,7 +570,7 @@ init python in director:
 
     class Cancel(Action):
         """
-        This action cances the operation, resetting the AST and returning to
+        This action cancels the operation, resetting the AST and returning to
         the lines screen.
         """
 
@@ -516,6 +579,7 @@ init python in director:
             state.kind = state.original_kind
             state.tag = state.original_tag
             state.attributes = state.original_attributes
+            state.transforms = state.original_transforms
 
             state.mode = "lines"
 
@@ -579,6 +643,8 @@ style director_action_button is director_button
 style director_action_button_text is director_button_text:
     size 24
 
+style director_statement_text is director_text
+
 style director_statement_button is director_button
 
 style director_statement_button_text is director_button_text:
@@ -641,6 +707,8 @@ screen director_statement(state):
     $ kind = state.kind or "(statement)"
     $ tag = state.tag or "(tag)"
     $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
+    $ transforms = ", ".join(state.transforms) or "(transform)"
+
 
     hbox:
         style_prefix "director_statement"
@@ -648,6 +716,8 @@ screen director_statement(state):
         textbutton "[kind] " action SetField(state, "mode", "kind")
         textbutton "[tag] " action SetField(state, "mode", "tag")
         textbutton "[attributes] " action SetField(state, "mode", "attributes")
+        text "at "
+        textbutton "[transforms]" action SetField(state, "mode", "transform")
 
     null height 14
 
@@ -742,6 +812,55 @@ screen director_attributes(state):
 
         use director_footer(state)
 
+screen director_attributes(state):
+
+    vbox:
+
+        use director_statement(state)
+
+        text "Attributes:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.get_attributes():
+                    textbutton "[t]":
+                        action director.ToggleAttribute(t)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
+
+
+screen director_transform(state):
+
+    vbox:
+
+        use director_statement(state)
+
+        text "Transforms:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.get_transforms():
+                    textbutton "[t]":
+                        action director.ToggleTransform(t)
+                        alternate director.AddTransform(t)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
 
 screen director():
 
@@ -758,5 +877,7 @@ screen director():
             use director_tag(state)
         elif state.mode == "attributes":
             use director_attributes(state)
+        elif state.mode == "transform":
+            use director_transform(state)
 
 
