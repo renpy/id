@@ -190,11 +190,14 @@ init python in director:
             renpy.restart_interaction()
             return
 
-        if state.added_statement is not None:
-            renpy.scriptedit.remove_from_ast(state.filename, state.linenumber)
+        linenumber = state.linenumber
 
         if statement:
-            renpy.scriptedit.add_to_ast_before(statement, state.filename, state.linenumber)
+            renpy.scriptedit.add_to_ast_before(statement, state.filename, linenumber)
+            linenumber += 1
+
+        if state.added_statement is not None:
+            renpy.scriptedit.remove_from_ast(state.filename, linenumber)
 
         state.added_statement = statement
 

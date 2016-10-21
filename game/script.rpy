@@ -15,6 +15,7 @@ define e = Character(_('Eileen'))
 
 label start:
 
+
     scene bg roof
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
