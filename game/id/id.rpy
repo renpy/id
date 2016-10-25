@@ -1,4 +1,4 @@
-init python in director:
+init -100 python in director:
     from store import Action, config
     import store
 
@@ -12,7 +12,11 @@ init python in director:
     # A set of tags that should only be used with the scene statement.
     scene_tags = { "bg" }
 
+    # A list of transforms to use.
     transforms = [ "left", "center", "right" ]
+
+    # Should we offer a button to access the director?
+    button = True
 
     state = renpy.session.get("director", None)
 
@@ -605,6 +609,11 @@ init python in director:
             renpy.clear_line_log()
             update_ast()
 
+init 100 python in director:
+
+    if button:
+        config.overlay_screens.append("director_button")
+
 
 # Styles and screens ###########################################################
 
@@ -724,6 +733,7 @@ screen director_statement(state):
 
     null height 14
 
+
 screen director_footer(state):
 
     null height 14
@@ -744,6 +754,7 @@ screen director_footer(state):
 
         if state.change:
             textbutton "Remove" action director.Remove()
+
 
 screen director_kind(state):
 
@@ -768,6 +779,7 @@ screen director_kind(state):
 
         use director_footer(state)
 
+
 screen director_tag(state):
 
     vbox:
@@ -790,6 +802,7 @@ screen director_tag(state):
                         action director.SetTag(t)
 
         use director_footer(state)
+
 
 screen director_attributes(state):
 
@@ -814,6 +827,7 @@ screen director_attributes(state):
                         ypadding 0
 
         use director_footer(state)
+
 
 screen director_attributes(state):
 
@@ -865,6 +879,7 @@ screen director_transform(state):
 
         use director_footer(state)
 
+
 screen director():
 
     $ state = director.state
@@ -883,4 +898,19 @@ screen director():
         elif state.mode == "transform":
             use director_transform(state)
 
+
+screen director_button():
+
+    # Ensure this appears on top of other screens.
+    zorder 100
+
+    textbutton _("Director"):
+        style "director_launch_button"
+        action director.Start()
+
+style director_launch_button is quick_button:
+    xalign 0.9
+    yalign 1.0
+
+style director_launch_button_text is quick_button_text
 
