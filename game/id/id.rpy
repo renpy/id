@@ -634,10 +634,20 @@ init -100 python in director:
             renpy.clear_line_log()
             update_ast()
 
-init 100 python in director:
+init 100 python hide in director:
 
     if button:
         config.overlay_screens.append("director_button")
+
+    for name, file, _line in renpy.dump.transforms:
+        if file.startswith("renpy/common/"):
+            continue
+
+        if file == "game/screens.rpy":
+            continue
+
+        transforms.append(name)
+        transforms.sort()
 
 
 # Styles and screens ###########################################################
@@ -645,10 +655,9 @@ init 100 python in director:
 style director_frame is _frame:
     xfill True
     yfill False
-    yalign 0.0
     background "#d0d0d0d0"
     ypadding 0
-
+    yalign 0.0
 
 style director_text is _text:
     size 20
