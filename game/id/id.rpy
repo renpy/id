@@ -96,6 +96,8 @@ init -100 python in director:
         being displayed, and also to show or hide the director as appropriate.
         """
 
+        show_director = False
+
         # Update the line log.
         lines = renpy.get_line_log()
         renpy.clear_line_log()
@@ -112,10 +114,13 @@ init -100 python in director:
 
         for filename, line, node in lines[-30:]:
 
-            if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
-                continue
-
             if filename.startswith("renpy/"):
+                show_director = False
+                continue
+            else:
+                show_director = True
+
+            if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
                 continue
 
             text = renpy.scriptedit.get_line_text(filename, line)
@@ -139,7 +144,7 @@ init -100 python in director:
             ))
 
         # Show the director screen.
-        if state.show_director and (renpy.context_nesting_level() == 0):
+        if show_director and state.show_director and (renpy.context_nesting_level() == 0):
             if not renpy.get_screen("director"):
                 renpy.show_screen("director")
         else:
