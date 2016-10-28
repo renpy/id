@@ -925,7 +925,7 @@ screen director_transform(state):
 
 screen director():
     modal True
-    zorder 900
+    zorder 99
 
     $ state = director.state
 
