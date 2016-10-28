@@ -1,3 +1,23 @@
+# Copyright 2016 Tom Rothamel <pytom@bishoujo.us>
+
+# Permission to use, copy, modify, and/or distribute this software for
+# non-commerical purposes is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# For the purpose of this license, when using this software to develop a
+# another software program, this program is being used commerically if
+# payment is required to distribute that program, to use that program, or
+# to access any feature in that program, or if the program presents
+# advertising to its user.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+
 init -100 python in director:
     from store import Action, config
     import store
@@ -14,6 +34,11 @@ init -100 python in director:
 
     # A list of transforms to use.
     transforms = [ "left", "center", "right" ]
+
+    # Is the director licensed for commercial use? Yes, you can remove
+    # the warning by changing this variable - but it doesn't change the
+    # license of the director tool.
+    commercial = False
 
     # Should we offer a button to access the director?
     button = True
@@ -669,7 +694,8 @@ screen director_lines(state):
         style "empty"
         background Solid("#fff8", xsize=20, xpos=189)
 
-        has vbox
+        has vbox:
+            xfill True
 
         for line_pos, line_text, add_action, change_action in state.lines:
 
@@ -721,7 +747,6 @@ screen director_statement(state):
     $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
     $ transforms = ", ".join(state.transforms) or "(transform)"
 
-
     hbox:
         style_prefix "director_statement"
 
@@ -755,10 +780,10 @@ screen director_footer(state):
         if state.change:
             textbutton "Remove" action director.Remove()
 
-
 screen director_kind(state):
 
     vbox:
+        xfill True
 
         use director_statement(state)
 
@@ -783,6 +808,7 @@ screen director_kind(state):
 screen director_tag(state):
 
     vbox:
+        xfill True
 
         use director_statement(state)
 
@@ -807,6 +833,7 @@ screen director_tag(state):
 screen director_attributes(state):
 
     vbox:
+        xfill True
 
         use director_statement(state)
 
@@ -832,6 +859,7 @@ screen director_attributes(state):
 screen director_attributes(state):
 
     vbox:
+        xfill True
 
         use director_statement(state)
 
@@ -857,6 +885,7 @@ screen director_attributes(state):
 screen director_transform(state):
 
     vbox:
+        xfill True
 
         use director_statement(state)
 
@@ -881,11 +910,16 @@ screen director_transform(state):
 
 
 screen director():
+    modal True
+    zorder 900
 
     $ state = director.state
 
     frame:
         style_prefix "director"
+
+        has fixed:
+            fit_first True
 
         if state.mode == "lines":
             use director_lines(state)
@@ -897,6 +931,12 @@ screen director():
             use director_attributes(state)
         elif state.mode == "transform":
             use director_transform(state)
+
+        if not director.commercial:
+            text "The interactive director is licensed for non-commercial use only.":
+                xalign 1.0
+                yalign 1.0
+                size 10
 
 
 screen director_button():
