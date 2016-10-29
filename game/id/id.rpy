@@ -45,6 +45,16 @@ init -100 python in director:
 
     state = renpy.session.get("director", None)
 
+    # A list of statements we find too uninteresting to present to the
+    # creator.
+    UNINTERESTING_NODES = (
+        renpy.ast.Translate,
+        renpy.ast.EndTranslate,
+    )
+
+
+
+
     # Initialize the state object if it doesn't exist.
     if state is None:
 
@@ -90,11 +100,13 @@ init -100 python in director:
 
         renpy.session["director"] = state
 
-    def interact():
+    def interact_base():
         """
-        This is called once per interaction, to update the list of lines
-        being displayed, and also to show or hide the director as appropriate.
+        This is called by interact to update our data structures.
         """
+
+        if renpy.game.interface.trans_pause:
+            return False
 
         show_director = False
 
@@ -114,14 +126,14 @@ init -100 python in director:
 
         for filename, line, node in lines[-30:]:
 
+            if isinstance(node, UNINTERESTING_NODES):
+                continue
+
             if filename.startswith("renpy/"):
                 show_director = False
                 continue
             else:
                 show_director = True
-
-            if not isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Say)):
-                continue
 
             text = renpy.scriptedit.get_line_text(filename, line)
             text = text.strip()
@@ -142,6 +154,19 @@ init -100 python in director:
                 add_action,
                 change_action,
             ))
+
+        return show_director
+
+
+
+    def interact():
+        """
+        This is called once per interaction, to update the list of lines
+        being displayed, and also to show or hide the director as appropriate.
+        """
+
+
+        show_director = interact_base()
 
         # Show the director screen.
         if show_director and state.show_director and (renpy.context_nesting_level() == 0):
@@ -643,7 +668,7 @@ init -100 python in director:
 
     class SemiModal(renpy.Displayable):
         """
-        This ignores events that
+        This wraps a displayable, and ignores
         """
 
         def __init__(self, child):
