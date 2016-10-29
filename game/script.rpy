@@ -15,6 +15,7 @@ define e = Character(_('Eileen'))
 
 label start:
 
+    pause
 
     scene bg roof
 

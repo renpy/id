@@ -639,6 +639,52 @@ init -100 python in director:
             renpy.clear_line_log()
             update_ast()
 
+    # Displayables #############################################################
+
+    class SemiModal(renpy.Displayable):
+        """
+        This ignores events that
+        """
+
+        def __init__(self, child):
+            renpy.Displayable.__init__(self)
+
+            self.child = child
+            self.w = 0
+            self.h = 0
+
+        def render(self, width, height, st, at):
+            surf = renpy.render(self.child, width, height, st, at)
+            w, h = surf.get_size()
+
+            self.w = w
+            self.h = h
+
+            rv = renpy.Render(w, h)
+            rv.blit(surf, (0, 0))
+
+            return rv
+
+        def event(self, ev, x, y, st):
+
+            rv = self.child.event(ev, x, y, st)
+            if rv is not None:
+                return rv
+
+            if (0 <= x < self.w) and (0 <= y < self.h):
+                raise renpy.display.layout.IgnoreLayers()
+
+            return None
+
+        def get_placement(self):
+            return self.child.get_placement()
+
+        def visit(self):
+            return [ self.child ]
+
+
+
+
 init 100 python hide in director:
 
     if button:
@@ -924,13 +970,13 @@ screen director_transform(state):
 
 
 screen director():
-    modal True
     zorder 99
 
     $ state = director.state
 
     frame:
         style_prefix "director"
+        at director.SemiModal
 
         has fixed:
             fit_first True
