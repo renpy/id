@@ -291,7 +291,7 @@ init -100 python in director:
         else:
             rv = [ ]
 
-        rv.sort(key=lambda a : a.lower())
+        rv.sort(key=component_key)
         return rv
 
     def get_attributes():
@@ -316,10 +316,10 @@ init -100 python in director:
         l = [ ]
 
         for attr in attrcount:
-            l.append((attrtotalpos[attr] / attrcount[attr], attr))
+            l.append((attrtotalpos[attr] / attrcount[attr], component_key(attr), attr))
 
         l.sort()
-        return [ i[1] for i in l ]
+        return [ i[2] for i in l ]
 
     def get_transforms():
         """
@@ -705,8 +705,27 @@ init -100 python in director:
         def visit(self):
             return [ self.child ]
 
+    # Sort #####################################################################
 
+    import re
 
+    def component_key(s):
+        """
+        Sorts l in a way that groups numbers together and treats them as
+        numbers (so c10 comes after c9, not c1.)
+        """
+        rv = [ ]
+
+        for i, v in enumerate(re.split(r'(\d+)', s.lower())):
+            if not v:
+                continue
+
+            if i & 1:
+                v = int(v)
+
+            rv.append(v)
+
+        return tuple(rv)
 
 init 100 python hide in director:
 
@@ -721,7 +740,7 @@ init 100 python hide in director:
             continue
 
         transforms.append(name)
-        transforms.sort()
+        transforms.sort(key=component_key)
 
 
 # Styles and screens ###########################################################
