@@ -53,8 +53,6 @@ init -100 python in director:
     )
 
 
-
-
     # Initialize the state object if it doesn't exist.
     if state is None:
 
@@ -998,6 +996,9 @@ screen director():
     zorder 99
 
     $ state = director.state
+
+    if renpy.loadable("id/" + state.mode + ".png"):
+        add ("id/" + state.mode + ".png")
 
     frame:
         style_prefix "director"

@@ -21,7 +21,8 @@ label start:
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
 
-    show eileen happy
+    show lucy beach happy at c4
+    show eileen happy at c8
     e "If I showed up right about now."
 
     e "That's way better, isn't it?"
