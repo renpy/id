@@ -139,7 +139,10 @@ init -100 python in director:
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
 
-            add_action = AddStatement(filename, line)
+            if isinstance(node, renpy.ast.Label):
+                add_action = None
+            else:
+                add_action = AddStatement(filename, line)
 
             if isinstance(node, (renpy.ast.Show, renpy.ast.Scene)):
                 change_action = ChangeStatement(filename, line, node)
