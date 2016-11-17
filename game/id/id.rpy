@@ -117,12 +117,16 @@ init -100 python in director:
 
         # State.lines is the list of lines we've just seen, along with
         # the actions used to edit those lines.
-        for _filename, _line, node in lines[-30:]:
-            if isinstance(node, renpy.ast.Say):
+        for lle in lines[-30:]:
+            if isinstance(lle.node, renpy.ast.Say):
                 state.lines = [ ]
                 break
 
-        for filename, line, node in lines[-30:]:
+        for lle in lines[-30:]:
+
+            filename = lle.filename
+            line = lle.line
+            node = lle.node
 
             if isinstance(node, UNINTERESTING_NODES):
                 continue
