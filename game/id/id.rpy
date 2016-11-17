@@ -143,7 +143,7 @@ init -100 python in director:
             short_fn = filename.rpartition('/')[2]
             pos = "{}:{:04d}".format(short_fn, line)
 
-            if isinstance(node, renpy.ast.Label):
+            if lle.abnormal:
                 add_action = None
             else:
                 add_action = AddStatement(filename, line)
