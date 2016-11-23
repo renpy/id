@@ -459,6 +459,8 @@ init -100 python in director:
 
             self.tag = node.imspec[0][0]
             self.attributes = list(node.imspec[0][1:])
+            self.transforms = list(node.imspec[3])
+
 
         def __call__(self):
             state.filename = self.filename
@@ -470,10 +472,8 @@ init -100 python in director:
             state.attributes = self.attributes
             state.original_tag = self.tag
             state.original_attributes = list(self.attributes)
-
-            print("Need to add support for changing transforms!")
-            state.transforms = [ ]
-            state.original_transforms = [ ]
+            state.transforms = list(self.transforms)
+            state.original_transforms = list(self.transforms)
 
             state.added_statement = True
             state.change = True
