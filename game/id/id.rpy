@@ -602,11 +602,14 @@ init -100 python in director:
         def __call__(self):
             statement = get_statement()
 
-            if state.change:
-                renpy.scriptedit.remove_line(state.filename, state.linenumber)
-
             if statement:
                 renpy.scriptedit.insert_line_before(statement, state.filename, state.linenumber)
+
+            if state.change:
+                if statement:
+                    renpy.scriptedit.remove_line(state.filename, state.linenumber + 1)
+                else:
+                    renpy.scriptedit.remove_line(state.filename, state.linenumber)
 
             state.mode = "lines"
             renpy.clear_line_log()

@@ -21,12 +21,8 @@ label start:
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
 
-    jump rest
 
-    "Ignore this line."
-
-label rest:
-
+    show eileen happy at center
     e "If I showed up right about now."
 
     e "That's way better, isn't it?"
