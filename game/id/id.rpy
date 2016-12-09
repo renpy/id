@@ -35,6 +35,9 @@ init -100 python in director:
     # A list of transforms to use.
     transforms = [ "left", "center", "right" ]
 
+    # A list of transitions to use.
+    transitions = [ "dissolve", "pixellate" ]
+
     # Is the director licensed for commercial use? Yes, you can remove
     # the warning by changing this variable - but it doesn't change the
     # license of the director tool.
@@ -148,7 +151,7 @@ init -100 python in director:
             else:
                 add_action = AddStatement(filename, line)
 
-            if isinstance(node, (renpy.ast.Show, renpy.ast.Scene)):
+            if isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.With)):
                 change_action = ChangeStatement(filename, line, node)
             else:
                 change_action = None
@@ -218,6 +221,9 @@ init -100 python in director:
 
         if state.kind is None:
             return None
+
+        if state.kind == "with":
+            return "with {}".format(state.transition)
 
         if state.tag is None:
             return None
@@ -434,6 +440,8 @@ init -100 python in director:
             state.original_attributes = [ ]
             state.transforms = [ ]
             state.original_transforms = [ ]
+            state.transition = None
+            state.original_transition = None
 
             state.added_statement = None
             state.change = False
@@ -452,14 +460,31 @@ init -100 python in director:
             self.filename = filename
             self.linenumber = linenumber
 
+            self.tag = None
+            self.attributes = [ ]
+            self.transforms = [ ]
+            self.transition = None
+
             if isinstance(node, renpy.ast.Show):
                 self.kind = "show"
+
+                self.tag = node.imspec[0][0]
+                self.attributes = list(node.imspec[0][1:])
+                self.transforms = list(node.imspec[3])
+
+
             elif isinstance(node, renpy.ast.Scene):
                 self.kind = "scene"
 
-            self.tag = node.imspec[0][0]
-            self.attributes = list(node.imspec[0][1:])
-            self.transforms = list(node.imspec[3])
+                self.tag = node.imspec[0][0]
+                self.attributes = list(node.imspec[0][1:])
+                self.transforms = list(node.imspec[3])
+
+
+            elif isinstance(node, renpy.ast.With):
+                self.kind = "with"
+                self.transition = node.expr
+
 
 
         def __call__(self):
@@ -467,13 +492,15 @@ init -100 python in director:
             state.linenumber = self.linenumber
 
             state.kind = self.kind
-            state.mode = "attributes"
+            state.mode = "with" if (self.kind == "with") else "attributes"
             state.tag = self.tag
             state.attributes = self.attributes
             state.original_tag = self.tag
             state.original_attributes = list(self.attributes)
             state.transforms = list(self.transforms)
             state.original_transforms = list(self.transforms)
+            state.transition = self.transition
+            state.original_transition = self.transition
 
             state.added_statement = True
             state.change = True
@@ -495,6 +522,9 @@ init -100 python in director:
             if self.kind in ("scene", "show"):
                 state.mode = "tag"
                 pick_tag()
+
+            if self.kind == "with":
+                state.mode = "with"
 
             update_ast()
 
@@ -592,6 +622,22 @@ init -100 python in director:
 
         def get_selected(self):
             return self.transform in state.transforms
+
+    class SetTransition(Action):
+        """
+        This sets the transition used by a with statement.
+        """
+
+        def __init__(self, transition):
+            self.transition = transition
+
+        def __call__(self):
+            state.transition = self.transition
+
+            update_ast()
+
+        def get_selected(self):
+            return self.transition == state.transition
 
 
     class Commit(Action):
@@ -870,11 +916,22 @@ screen director_statement(state):
 
     null height 14
 
+screen director_with_statement(state):
+
+    $ transition = state.transition or "(transition)"
+
+    hbox:
+        style_prefix "director_statement"
+
+        text "with "
+        textbutton "[transition]" action SetField(state, "mode", "with")
+
+    null height 14
+
 
 screen director_footer(state):
 
     null height 14
-
 
     hbox:
         style_prefix "director_action"
@@ -912,7 +969,7 @@ screen director_kind(state):
 
                 textbutton "scene" action director.SetKind("scene")
                 textbutton "show" action director.SetKind("show")
-                # textbutton "with" action SetKind("with")
+                textbutton "with" action director.SetKind("with")
 
         use director_footer(state)
 
@@ -1020,6 +1077,31 @@ screen director_transform(state):
 
         use director_footer(state)
 
+screen director_with(state):
+
+    vbox:
+        xfill True
+
+        use director_with_statement(state)
+
+        text "Transition:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.transitions:
+                    textbutton "[t]":
+                        action director.SetTransition(t)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
+
 
 screen director():
     zorder 99
@@ -1046,6 +1128,9 @@ screen director():
             use director_attributes(state)
         elif state.mode == "transform":
             use director_transform(state)
+        elif state.mode == "with":
+            use director_with(state)
+
 
         if not director.commercial:
             text "The interactive director is licensed for non-commercial use only.":
