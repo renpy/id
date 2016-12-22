@@ -22,6 +22,14 @@ init -100 python in director:
     from store import Action, config
     import store
 
+    # The version of the director.
+    version = "0.1"
+
+    # Is the director licensed for commercial use? Yes, you can remove
+    # the warning by changing this variable - but it doesn't change the
+    # license of the director tool.
+    commercial = False
+
     # A set of tags that will not be show to the user.
     tag_blacklist = {
         "black",
@@ -38,11 +46,6 @@ init -100 python in director:
     # A list of transitions to use.
     transitions = [ "dissolve", "pixellate" ]
 
-    # Is the director licensed for commercial use? Yes, you can remove
-    # the warning by changing this variable - but it doesn't change the
-    # license of the director tool.
-    commercial = False
-
     # Should we offer a button to access the director?
     button = True
 
@@ -54,7 +57,6 @@ init -100 python in director:
         renpy.ast.Translate,
         renpy.ast.EndTranslate,
     )
-
 
     # Initialize the state object if it doesn't exist.
     if state is None:
@@ -1132,11 +1134,17 @@ screen director():
             use director_with(state)
 
 
-        if not director.commercial:
-            text "The interactive director is licensed for non-commercial use only.":
-                xalign 1.0
-                yalign 1.0
-                size 10
+        hbox:
+            xalign 1.0
+            yalign 1.0
+            spacing 10
+
+            if not director.commercial:
+                text "v[director.version]":
+                    size 10
+
+                text "The interactive director is licensed for non-commercial use only.":
+                    size 10
 
 
 screen director_button():
