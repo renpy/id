@@ -259,6 +259,7 @@ init -100 python in director:
         statement = get_statement()
 
         if state.added_statement == statement:
+
             renpy.restart_interaction()
             return
 
@@ -714,6 +715,7 @@ init -100 python in director:
             if state.change:
                 renpy.scriptedit.remove_line(state.filename, state.linenumber)
 
+            state.kind = None
             state.tag = None
             state.mode = "lines"
 
