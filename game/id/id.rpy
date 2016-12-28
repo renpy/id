@@ -79,6 +79,9 @@ init -100 python in director:
         state.filename = ""
         state.linenumber = 0
 
+        # What tags are currently showing?
+        state.showing = set()
+
         # What kind of statement is this?
         state.kind = None
         state.original_kind = None
@@ -151,10 +154,10 @@ init -100 python in director:
             if lle.abnormal:
                 add_action = None
             else:
-                add_action = AddStatement(filename, line)
+                add_action = AddStatement(lle)
 
-            if isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.With)):
-                change_action = ChangeStatement(filename, line, node)
+            if isinstance(node, (renpy.ast.Show, renpy.ast.Scene, renpy.ast.Hide, renpy.ast.With)):
+                change_action = ChangeStatement(lle, node)
             else:
                 change_action = None
 
@@ -186,6 +189,12 @@ init -100 python in director:
             if renpy.get_screen("director"):
                 renpy.hide_screen("director")
 
+    def line_log_callback(lle):
+        """
+        This annotates a line log entry with more information.
+        """
+        lle.showing = set(renpy.get_showing_tags())
+
 
     def init():
         """
@@ -195,6 +204,7 @@ init -100 python in director:
 
         config.clear_lines = False
         config.line_log = True
+        config.line_log_callbacks = [ line_log_callback ]
 
         config.start_interact_callbacks.append(interact)
 
@@ -315,8 +325,7 @@ init -100 python in director:
         elif state.kind == "show":
             rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
         elif state.kind == "hide":
-            showing = set(renpy.get_showing_tags())
-            rv = [ i for i in renpy.get_available_image_tags() if i in showing if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
+            rv = [ i for i in renpy.get_available_image_tags() if i in state.showing if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
         else:
             rv = [ ]
 
@@ -439,14 +448,14 @@ init -100 python in director:
         An action that adds a new statement before `filename`:`linenumber`.
         """
 
-        def __init__(self, filename, linenumber):
-            self.filename = filename
-            self.linenumber = linenumber
+        def __init__(self, lle):
+            self.lle = lle
 
         def __call__(self):
 
-            state.filename = self.filename
-            state.linenumber = self.linenumber
+            state.filename = self.lle.filename
+            state.linenumber = self.lle.line
+            state.showing = self.lle.showing
 
             state.kind = None
             state.mode = "kind"
@@ -472,9 +481,8 @@ init -100 python in director:
             Should be the AST node corresponding to that statement.
         """
 
-        def __init__(self, filename, linenumber, node):
-            self.filename = filename
-            self.linenumber = linenumber
+        def __init__(self, lle, node):
+            self.lle = lle
 
             self.tag = None
             self.attributes = [ ]
@@ -504,8 +512,9 @@ init -100 python in director:
 
 
         def __call__(self):
-            state.filename = self.filename
-            state.linenumber = self.linenumber
+            state.filename = self.lle.filename
+            state.linenumber = self.lle.line
+            state.showing = self.lle.showing
 
             state.kind = self.kind
 
