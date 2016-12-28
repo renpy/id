@@ -505,6 +505,13 @@ init -100 python in director:
                 self.transforms = list(node.imspec[3])
 
 
+            elif isinstance(node, renpy.ast.Hide):
+                self.kind = "hide"
+
+                self.tag = node.imspec[0][0]
+                self.attributes = list(node.imspec[0][1:])
+                self.transforms = list(node.imspec[3])
+
             elif isinstance(node, renpy.ast.With):
                 self.kind = "with"
                 self.transition = node.expr
@@ -525,7 +532,6 @@ init -100 python in director:
             else:
                 state.mode = "attributes"
 
-            state.mode = "with" if (self.kind == "with") else "attributes"
             state.tag = self.tag
             state.attributes = self.attributes
             state.original_tag = self.tag

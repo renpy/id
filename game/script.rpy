@@ -25,7 +25,6 @@ label start:
     show eileen happy at center
     e "If I showed up right about now."
 
-    hide eileen
     e "That's way better, isn't it?"
 
     return
