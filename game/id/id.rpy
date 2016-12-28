@@ -937,9 +937,10 @@ screen director_statement(state):
         textbutton "[kind] " action SetField(state, "mode", "kind")
         textbutton "[tag] " action SetField(state, "mode", "tag")
 
-        if kind != "hide":
-
+        if state.attributes or state.kind in { "scene", "show"}:
             textbutton "[attributes] " action SetField(state, "mode", "attributes")
+
+        if state.transforms or state.kind in { "scene", "show"}:
             text "at "
             textbutton "[transforms]" action SetField(state, "mode", "transform")
 
