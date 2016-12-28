@@ -230,12 +230,18 @@ init -100 python in director:
         if state.tag is None:
             return None
 
-        l = renpy.get_available_image_attributes(state.tag, state.attributes)
+        if state.kind == "hide":
 
-        attributes = get_image_attributes()
+            attributes = state.attributes
 
-        if attributes is None:
-            return
+        else:
+
+            l = renpy.get_available_image_attributes(state.tag, state.attributes)
+
+            attributes = get_image_attributes()
+
+            if attributes is None:
+                return
 
         rv = [ state.kind ]
 
@@ -290,6 +296,10 @@ init -100 python in director:
             return
 
         state.tag = tags[0]
+
+        if state.kind == "hide":
+            return
+
         state.mode = "attributes"
 
 
@@ -304,6 +314,9 @@ init -100 python in director:
             rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i in scene_tags ]
         elif state.kind == "show":
             rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
+        elif state.kind == "hide":
+            showing = set(renpy.get_showing_tags())
+            rv = [ i for i in renpy.get_available_image_tags() if i in showing if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
         else:
             rv = [ ]
 
@@ -495,6 +508,14 @@ init -100 python in director:
             state.linenumber = self.linenumber
 
             state.kind = self.kind
+
+            if self.kind == "with":
+                state.mode = "with"
+            elif self.kind == "hide":
+                state.mode = "tag"
+            else:
+                state.mode = "attributes"
+
             state.mode = "with" if (self.kind == "with") else "attributes"
             state.tag = self.tag
             state.attributes = self.attributes
@@ -522,7 +543,7 @@ init -100 python in director:
                 state.tag = None
                 state.attributes = [ ]
 
-            if self.kind in ("scene", "show"):
+            if self.kind in ("scene", "show", "hide"):
                 state.mode = "tag"
                 pick_tag()
 
@@ -546,7 +567,8 @@ init -100 python in director:
                 state.tag = self.tag
                 state.attributes = [ ]
 
-            state.mode = "attributes"
+            if state.kind != "hide":
+                state.mode = "attributes"
 
             update_ast()
 
@@ -914,9 +936,12 @@ screen director_statement(state):
 
         textbutton "[kind] " action SetField(state, "mode", "kind")
         textbutton "[tag] " action SetField(state, "mode", "tag")
-        textbutton "[attributes] " action SetField(state, "mode", "attributes")
-        text "at "
-        textbutton "[transforms]" action SetField(state, "mode", "transform")
+
+        if kind != "hide":
+
+            textbutton "[attributes] " action SetField(state, "mode", "attributes")
+            text "at "
+            textbutton "[transforms]" action SetField(state, "mode", "transform")
 
     null height 14
 
@@ -973,6 +998,7 @@ screen director_kind(state):
 
                 textbutton "scene" action director.SetKind("scene")
                 textbutton "show" action director.SetKind("show")
+                textbutton "hide" action director.SetKind("hide")
                 textbutton "with" action director.SetKind("with")
 
         use director_footer(state)
