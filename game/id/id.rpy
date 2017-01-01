@@ -312,6 +312,82 @@ init -100 python in director:
 
         state.mode = "attributes"
 
+    def needs_space(filename, line):
+        """
+        Returns True if there should be a space between (filename, line-1) and
+        (filename, line).
+        """
+
+        previous = line
+
+        while True:
+
+            if previous <= 0:
+                return False
+
+            previous -= 1
+
+            previous_nodes = renpy.scriptedit.nodes_on_line(filename, previous)
+            if previous_nodes:
+                break
+
+        next = line
+
+        while True:
+
+            if next > line + 10:
+                return False
+
+            next_nodes = renpy.scriptedit.nodes_on_line(filename, next)
+            if next_nodes:
+                break
+
+            next += 1
+
+        def relevant(nodes):
+            for n in nodes:
+                if isinstance(n, (renpy.ast.Show, renpy.ast.Hide, renpy.ast.Scene, renpy.ast.With)):
+                    return True
+
+            return False
+
+        print("needs_space", previous, relevant(previous_nodes), next, relevant(next_nodes))
+
+
+        return relevant(previous_nodes) ^ relevant(next_nodes)
+
+
+    def is_spacing(filename, line):
+        print("is_spacing", filename, line, renpy.scriptedit.get_physical_line(filename, line).strip())
+        return not renpy.scriptedit.get_physical_line(filename, line).strip()
+
+    def adjust_spacing(filename, line):
+        """
+        Adjusts the spacing before and after (filename, line), as needed.
+        """
+
+        def adjust(nd, ld):
+            """
+            `nd`
+                The delta of the line to call needs_space on.
+
+            `ld`
+                The delta of the line to call is_space on, and to add or
+                remove.
+            """
+
+            if needs_space(filename, line + nd):
+                if not is_spacing(filename, line + ld):
+                    renpy.scriptedit.adjust_ast_linenumbers(filename, line + nd, 1)
+                    renpy.scriptedit.insert_line_before('', filename, line + nd)
+            else:
+                if is_spacing(filename, line + ld):
+                    renpy.scriptedit.adjust_ast_linenumbers(filename, line + ld, -1)
+                    renpy.scriptedit.remove_line(filename, line + ld)
+
+        adjust(1, 1)
+        adjust(0, -1)
+
 
     # Screen support functions #################################################
 
@@ -691,11 +767,18 @@ init -100 python in director:
             if statement:
                 renpy.scriptedit.insert_line_before(statement, state.filename, state.linenumber)
 
+            add_blank_before = False
+            add_blank_after = False
+
             if state.change:
                 if statement:
                     renpy.scriptedit.remove_line(state.filename, state.linenumber + 1)
                 else:
                     renpy.scriptedit.remove_line(state.filename, state.linenumber)
+
+            # If we added a line, add a space after that line.
+            if not state.change and statement:
+                adjust_spacing(state.filename, state.linenumber)
 
             state.mode = "lines"
             renpy.clear_line_log()
