@@ -15,16 +15,14 @@ define e = Character(_('Eileen'))
 
 label start:
 
-    pause
-
     scene bg roof
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
-
-
-    show eileen happy at center
     e "If I showed up right about now."
-
     e "That's way better, isn't it?"
+
+    "a
+    b
+    c"
 
     return
