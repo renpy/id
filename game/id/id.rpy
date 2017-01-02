@@ -1341,13 +1341,16 @@ screen director_button():
     # Ensure this appears on top of other screens.
     zorder 100
 
-    textbutton _("Director"):
-        style "director_launch_button"
-        action director.Start()
+    if not (director.state.active and director.state.show_director):
+        textbutton _("Interactive Director"):
+            style "director_launch_button"
+            action director.Start()
 
 style director_launch_button is quick_button:
-    xalign 0.9
-    yalign 1.0
+    xalign 0.5
+    yalign 0.0
+    xpadding 50
+    bottom_padding 10
 
 style director_launch_button_text is quick_button_text
 
