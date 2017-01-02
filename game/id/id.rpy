@@ -49,6 +49,17 @@ init -100 python in director:
     # Should we offer a button to access the director?
     button = True
 
+    # The spacing between a non-display line and a display line, or vice
+    # versa.
+    spacing = 1
+
+    # The spacing between two display lines.
+    display_spacing = 0
+
+    # The spacing between two non-display lines.
+    other_spacing = 0
+
+
     state = renpy.session.get("director", None)
 
     # A list of statements we find too uninteresting to present to the
@@ -361,18 +372,22 @@ init -100 python in director:
             return None
 
 
-        def relevant(nodes):
+        def display(nodes):
             for n in nodes:
                 if isinstance(n, DISPLAY_NODES):
                     return True
 
             return False
 
-        if relevant(previous_nodes) ^ relevant(next_nodes):
-            return 1
-        else:
-            return 0
+        previous_display = display(previous_nodes)
+        next_display = display(next_nodes)
 
+        if previous_display ^ next_display:
+            return spacing
+        elif previous_display:
+            return display_spacing
+        else:
+            return other_spacing
 
     def is_spacing(filename, line):
 
@@ -409,10 +424,14 @@ init -100 python in director:
 
             blanks.append(i)
 
-        if len(blanks) < space:
-            renpy.scriptedit.adjust_ast_linenumbers(filename, previous + 1, 1)
-            renpy.scriptedit.insert_line_before('', filename, previous + 1)
-        else:
+        delta_space = space - len(blanks)
+
+        if delta_space > 0:
+            for _ in range(delta_space):
+                renpy.scriptedit.adjust_ast_linenumbers(filename, previous + 1, 1)
+                renpy.scriptedit.insert_line_before('', filename, previous + 1)
+
+        elif delta_space < 0:
             blanks.reverse()
             blanks = blanks[space:]
 

@@ -22,3 +22,5 @@ label start:
     e "That's way better, isn't it?"
 
     return
+
+define director.other_spacing = 1

@@ -8,7 +8,7 @@ image lucy uniform happy = Placeholder()
 image lucy uniform mad = Placeholder()
 
 label main_menu:
-    return False
+    return
 
 # Declare the characters.
 define e = Character(_('Eileen'))
@@ -18,11 +18,10 @@ label start:
     scene bg roof
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
+
     e "If I showed up right about now."
     e "That's way better, isn't it?"
 
-    "a
-    b
-    c"
-
     return
+
+define director.other_spacing = 1
