@@ -59,6 +59,8 @@ init -100 python in director:
     # The spacing between two non-display lines.
     other_spacing = 0
 
+    # The maximum height of the source code list.
+    source_height = 280
 
     state = renpy.session.get("director", None)
 
@@ -1031,6 +1033,8 @@ style director_statement_button is director_button
 style director_statement_button_text is director_button_text:
     size 22
 
+style director_vscrollbar is _vscrollbar
+
 
 screen director_lines(state):
 
@@ -1041,29 +1045,39 @@ screen director_lines(state):
         has vbox:
             xfill True
 
-        for line_pos, line_text, add_action, change_action in state.lines:
+        viewport:
+            scrollbars "vertical"
+            ymaximum director.source_height
+            mousewheel True
+            yinitial 1.0
+            yfill False
 
-            hbox:
-                text " ":
-                    min_width 179
-                    style "director_text"
+            has vbox:
+                xfill True
 
-                textbutton "+" action add_action style "director_edit_button"
+            for line_pos, line_text, add_action, change_action in state.lines:
 
-            hbox:
+                hbox:
+                    text " ":
+                        min_width 179
+                        style "director_text"
 
-                text "[line_pos]":
-                    min_width 179
-                    text_align 1.0
-                    style "director_text"
+                    textbutton "+" action add_action style "director_edit_button"
 
-                if change_action:
-                    textbutton "✎" action change_action style "director_edit_button"
-                else:
-                    textbutton " " action change_action style "director_edit_button"
+                hbox:
 
-                text "[line_text]":
-                    style "director_text"
+                    text "[line_pos]":
+                        min_width 179
+                        text_align 1.0
+                        style "director_text"
+
+                    if change_action:
+                        textbutton "✎" action change_action style "director_edit_button"
+                    else:
+                        textbutton " " action change_action style "director_edit_button"
+
+                    text "[line_text]":
+                        style "director_text"
 
         hbox:
             text " ":

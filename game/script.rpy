@@ -18,7 +18,30 @@ label start:
     scene bg roof
 
     e "This is nice, but you know what would make this game way way way way way way nicer?"
-
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
+    pass
     e "If I showed up right about now."
     e "That's way better, isn't it?"
 
