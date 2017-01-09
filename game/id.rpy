@@ -938,6 +938,13 @@ init -100 python in director:
             if rv is not None:
                 return rv
 
+            if state.mode != "lines":
+
+                if renpy.map_event(ev, "rollback") or renpy.map_event(ev, "rollforward"):
+                    raise renpy.IgnoreEvent()
+
+                raise renpy.display.layout.IgnoreLayers()
+
             if (0 <= x < self.w) and (0 <= y < self.h):
                 raise renpy.display.layout.IgnoreLayers()
 
