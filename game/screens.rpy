@@ -306,6 +306,8 @@ screen navigation():
 
             textbutton _("Start") action Start()
 
+            textbutton _("Reset") action Confirm("Are you sure you want to reset script.rpy to the default?", ResetDirectorGame())
+
         else:
 
             textbutton _("History") action ShowMenu("history")

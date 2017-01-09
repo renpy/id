@@ -200,3 +200,15 @@ init python:
 ## by a slash.
 
 # define build.itch_project = "renpytom/test-project"
+
+
+init python:
+    class ResetDirectorGame(Action):
+        def __call__(self):
+            import os, shutil
+            rpy = os.path.join(config.gamedir, "script.rpy")
+            rpym = rpy + "m"
+
+            shutil.copy(rpym, rpy)
+            renpy.utter_restart()
+
