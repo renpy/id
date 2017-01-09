@@ -1,12 +1,6 @@
 ﻿# This file contains the script for the Ren'Py demo game. Execution starts at
 # the start label.
 
-
-image lucy beach happy = Placeholder()
-image lucy beach mad = Placeholder()
-image lucy uniform happy = Placeholder()
-image lucy uniform mad = Placeholder()
-
 label main_menu:
     return
 
@@ -15,36 +9,17 @@ define e = Character(_('Eileen'))
 
 label start:
 
-    scene bg roof
+    e "Hi there, it's me again. Today I'm going to teach you how to use Ren'Py's interactive director."
+    e "There isn't much around yet, but you can fix that. Click 'interactive director' at the top of the screen, to open the director, then click the bottom of the screen to advance things."
+    e "Let's add a background. In the director, click '+', 'scene', 'roof', and then 'Add' to finish."
+    e "You just added a scene statement."
+    e "Now how about adding me? Go up to the directory window, and click '+', 'show', 'eileen', 'happy' and then 'Add' to finish."
 
-    e "This is nice, but you know what would make this game way way way way way way nicer?"
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    pass
-    e "If I showed up right about now."
-    e "That's way better, isn't it?"
+    show eileen happy
+
+    e "In the director now, you can see a show statement we added for you. Move me to the right by clicking the editing pencil, then '(transform)' and 'right'. Click Change to finish."
+    e "You can also add hide and with statements, and remove statements using the editing pencil."
+    e "We hope that this makes directing your game a bit easier."
 
     return
 
-define director.other_spacing = 1
