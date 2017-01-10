@@ -12,7 +12,7 @@
 ##
 ## The _() surrounding the string marks it as eligible for translation.
 
-define config.name = _("id2")
+define config.name = _("Interactive Director Test Game")
 
 
 ## Determines if the title given above is shown on the main menu screen. Set
@@ -36,7 +36,7 @@ define gui.about = _("")
 ## distribution. This must be ASCII-only, and must not contain spaces, colons,
 ## or semicolons.
 
-define build.name = "id2"
+define build.name = "id"
 
 
 ## Sounds and music ############################################################
@@ -203,6 +203,7 @@ init python:
 
 
 init python:
+
     class ResetDirectorGame(Action):
         def __call__(self):
             import os, shutil
