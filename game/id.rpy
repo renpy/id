@@ -120,6 +120,9 @@ init -100 python in director:
         # Are we changing the script? (Does the node needed to be removed?)
         state.change = False
 
+        # The position of the first line.
+        state.old_pos = None
+
         renpy.session["director"] = state
 
     def interact_base():
@@ -135,6 +138,12 @@ init -100 python in director:
         # Update the line log.
         lines = renpy.get_line_log()
         renpy.clear_line_log()
+
+        if lines:
+            pos = (lines[0].filename, lines[0].line)
+            if pos != state.old_pos:
+                state.old_pos = pos
+                renpy.hide_screen("director")
 
         # Update state.line to the current line.
         state.line = renpy.get_filename_line()
