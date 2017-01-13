@@ -31,11 +31,7 @@ init -100 python in director:
     commercial = False
 
     # A set of tags that will not be show to the user.
-    tag_blacklist = {
-        "black",
-        "text",
-        "vtext",
-    }
+    tag_blacklist = { "black", "text", "vtext" }
 
     # A set of tags that should only be used with the scene statement.
     scene_tags = { "bg" }
