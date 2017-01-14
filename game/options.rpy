@@ -23,7 +23,7 @@ define gui.show_name = True
 
 ## The version of the game.
 
-define config.version = "1.0"
+define config.version = "1.1"
 
 
 ## Text that is placed on the game's about screen. To insert a blank line
@@ -201,6 +201,11 @@ init python:
 
 # define build.itch_project = "renpytom/test-project"
 
+
+# Do not include script_version.txt in the build. (This keeps us in developer
+# mode.)
+
+define build.script_version = False
 
 init python:
 
