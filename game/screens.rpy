@@ -10,40 +10,34 @@ init offset = -1
 ################################################################################
 
 style default:
-    font gui.default_font
-    size gui.text_size
-    color gui.text_color
+    properties gui.text_properties()
+    language gui.language
+
 
 style input:
-    color gui.accent_color
+    properties gui.text_properties("input", accent=True)
 
 style hyperlink_text:
-    color gui.accent_color
-    hover_color gui.hover_color
+    properties gui.text_properties("hyperlink", accent=True)
     hover_underline True
 
-
 style gui_text:
-    font gui.interface_font
-    color gui.interface_text_color
-    size gui.interface_text_size
+    properties gui.text_properties("interface")
 
 
 style button:
     properties gui.button_properties("button")
 
 style button_text is gui_text:
-    properties gui.button_text_properties("button")
+    properties gui.text_properties("button")
     yalign 0.5
 
 
 style label_text is gui_text:
-    color gui.accent_color
-    size gui.label_text_size
+    properties gui.text_properties("label", accent=True)
 
 style prompt_text is gui_text:
-    color gui.text_color
-    size gui.interface_text_size
+    properties gui.text_properties("prompt")
 
 
 style bar:
@@ -107,16 +101,17 @@ screen say(who, what):
     window:
         id "window"
 
-        text what id "what"
-
         if who is not None:
 
             window:
                 style "namebox"
                 text who id "who"
 
-    # If there's a side image, display it above the text. Do not display
-    # on the phone variant - there's no room.
+        text what id "what"
+
+
+    ## If there's a side image, display it above the text. Do not display on the
+    ## phone variant - there's no room.
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
 
@@ -149,20 +144,17 @@ style namebox:
     padding gui.namebox_borders.padding
 
 style say_label:
-    color gui.accent_color
-    font gui.name_font
-    size gui.name_text_size
+    properties gui.text_properties("name", accent=True)
     xalign gui.name_xalign
     yalign 0.5
 
 style say_dialogue:
-    xpos gui.text_xpos
-    xanchor gui.text_xalign
-    xsize gui.text_width
-    ypos gui.text_ypos
+    properties gui.text_properties("dialogue")
 
-    text_align gui.text_xalign
-    layout ("subtitle" if gui.text_xalign else "tex")
+    xpos gui.dialogue_xpos
+    xsize gui.dialogue_width
+    ypos gui.dialogue_ypos
+
 
 
 ## Input screen ################################################################
@@ -181,25 +173,23 @@ screen input(prompt):
     window:
 
         vbox:
-            xpos gui.text_xpos
-            xanchor gui.text_xalign
-            ypos gui.text_ypos
+            xpos gui.dialogue_xpos
+            xanchor gui.dialogue_xalign
+            ypos gui.dialogue_ypos
+            xsize gui.dialogue_width
 
             text prompt style "input_prompt"
             input id "input"
 
 
-style input_prompt is default
+style input_prompt is say_dialogue
 
 style input_prompt:
-    xmaximum gui.text_width
-    xalign gui.text_xalign
-    text_align gui.text_xalign
+    properties gui.text_properties("input_prompt")
+    xmaximum gui.dialogue_width
 
 style input:
-    xmaximum gui.text_width
-    xalign gui.text_xalign
-    text_align gui.text_xalign
+    xmaximum gui.dialogue_width
 
 ## Choice screen ###############################################################
 ##
@@ -247,24 +237,25 @@ style choice_button_text is default:
 
 screen quick_menu():
 
-    # Ensure this appears on top of other screens.
+    ## Ensure this appears on top of other screens.
     zorder 100
 
-    # Add an in-game quick menu.
-    hbox:
-        style_prefix "quick"
+    if quick_menu:
 
-        xalign 0.5
-        yalign 1.0
+        hbox:
+            style_prefix "quick"
 
-        textbutton _("Back") action Rollback()
-        textbutton _("History") action ShowMenu('history')
-        textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
-        textbutton _("Auto") action Preference("auto-forward", "toggle")
-        textbutton _("Save") action ShowMenu('save')
-        textbutton _("Q.Save") action QuickSave()
-        textbutton _("Q.Load") action QuickLoad()
-        textbutton _("Prefs") action ShowMenu('preferences')
+            xalign 0.5
+            yalign 1.0
+
+            textbutton _("Back") action Rollback()
+            textbutton _("History") action ShowMenu('history')
+            textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
+            textbutton _("Auto") action Preference("auto-forward", "toggle")
+            textbutton _("Save") action ShowMenu('save')
+            textbutton _("Q.Save") action QuickSave()
+            textbutton _("Q.Load") action QuickLoad()
+            textbutton _("Prefs") action ShowMenu('preferences')
 
 
 ## This code ensures that the quick_menu screen is displayed in-game, whenever
@@ -272,6 +263,7 @@ screen quick_menu():
 init python:
     config.overlay_screens.append("quick_menu")
 
+default quick_menu = True
 
 style quick_button is default
 style quick_button_text is button_text
@@ -284,7 +276,7 @@ style quick_button_text:
 
 
 ################################################################################
-# Main and Game Menu Screens
+## Main and Game Menu Screens
 ################################################################################
 
 ## Navigation screen ###########################################################
@@ -356,14 +348,14 @@ style navigation_button_text:
 
 screen main_menu():
 
-    # This ensures that any other menu screen is replaced.
+    ## This ensures that any other menu screen is replaced.
     tag menu
 
     style_prefix "main_menu"
 
     add gui.main_menu_background
 
-    # This empty frame darkens the main menu.
+    ## This empty frame darkens the main menu.
     frame:
         pass
 
@@ -401,14 +393,13 @@ style main_menu_vbox:
     yoffset -20
 
 style main_menu_text:
-    xalign 1.0
-
-    layout "subtitle"
-    text_align 1.0
-    color gui.accent_color
+    properties gui.text_properties("main_menu", accent=True)
 
 style main_menu_title:
-    size gui.title_text_size
+    properties gui.text_properties("title")
+
+style main_menu_version:
+    properties gui.text_properties("version")
 
 
 ## Game Menu screen ############################################################
@@ -416,26 +407,25 @@ style main_menu_title:
 ## This lays out the basic common structure of a game menu screen. It's called
 ## with the screen title, and displays the background, title, and navigation.
 ##
-## The scroll parameter can be None, or one of "viewport" or "vpgrid". When this
-## screen is intended to be used with one or more children, which are
+## The scroll parameter can be None, or one of "viewport" or "vpgrid". When
+## this screen is intended to be used with one or more children, which are
 ## transcluded (placed) inside it.
 
 screen game_menu(title, scroll=None):
 
-    # Add the backgrounds.
+    style_prefix "game_menu"
+
     if main_menu:
         add gui.main_menu_background
     else:
         add gui.game_menu_background
-
-    style_prefix "game_menu"
 
     frame:
         style "game_menu_outer_frame"
 
         hbox:
 
-            # Reserve space for the navigation section.
+            ## Reserve space for the navigation section.
             frame:
                 style "game_menu_navigation_frame"
 
@@ -585,8 +575,8 @@ style about_label_text:
 ## it again. Since they share nearly everything in common, both are implemented
 ## in terms of a third screen, file_slots.
 ##
-## https://www.renpy.org/doc/html/screen_special.html#save
-## https://www.renpy.org/doc/html/screen_special.html#load
+## https://www.renpy.org/doc/html/screen_special.html#save https://
+## www.renpy.org/doc/html/screen_special.html#load
 
 screen save():
 
@@ -604,7 +594,7 @@ screen load():
 
 screen file_slots(title):
 
-    default page_name_value = FilePageNameInputValue()
+    default page_name_value = FilePageNameInputValue(pattern=_("Page {}"), auto=_("Automatic saves"), quick=_("Quick saves"))
 
     use game_menu(title):
 
@@ -614,7 +604,7 @@ screen file_slots(title):
             ## buttons do.
             order_reverse True
 
-            # The page name, which can be edited by clicking on a button.
+            ## The page name, which can be edited by clicking on a button.
             button:
                 style "page_label"
 
@@ -665,11 +655,13 @@ screen file_slots(title):
 
                 textbutton _("<") action FilePagePrevious()
 
-                textbutton _("{#auto_page}A") action FilePage("auto")
+                if config.has_autosave:
+                    textbutton _("{#auto_page}A") action FilePage("auto")
 
-                textbutton _("{#quick_page}Q") action FilePage("quick")
+                if config.has_quicksave:
+                    textbutton _("{#quick_page}Q") action FilePage("quick")
 
-                # range(1, 10) gives the numbers from 1 to 9.
+                ## range(1, 10) gives the numbers from 1 to 9.
                 for page in range(1, 10):
                     textbutton "[page]" action FilePage(page)
 
@@ -1072,15 +1064,15 @@ screen gamepad_help():
 
     hbox:
         label _("Right Trigger\nA/Bottom Button")
-        text _("Advance dialogue and activates the interface.")
+        text _("Advances dialogue and activates the interface.")
 
     hbox:
-        label ("Left Trigger\nLeft Shoulder")
-        text _("Roll back to earlier dialogue.")
+        label _("Left Trigger\nLeft Shoulder")
+        text _("Rolls back to earlier dialogue.")
 
     hbox:
         label _("Right Shoulder")
-        text _("Roll forward to later dialogue.")
+        text _("Rolls forward to later dialogue.")
 
     hbox:
         label _("D-Pad, Sticks")
@@ -1088,7 +1080,7 @@ screen gamepad_help():
 
     hbox:
         label _("Start, Guide")
-        text _("Access the game menu.")
+        text _("Accesses the game menu.")
 
     hbox:
         label _("Y/Top Button")
@@ -1240,8 +1232,8 @@ style skip_text:
     size gui.notify_text_size
 
 style skip_triangle:
-    # We have to use a font that has the BLACK RIGHT-POINTING SMALL TRIANGLE
-    # glyph in it.
+    ## We have to use a font that has the BLACK RIGHT-POINTING SMALL TRIANGLE
+    ## glyph in it.
     font "DejaVuSans.ttf"
 
 
@@ -1281,7 +1273,7 @@ style notify_frame:
     padding gui.notify_frame_borders.padding
 
 style notify_text:
-    size gui.notify_text_size
+    properties gui.text_properties("notify")
 
 
 ## NVL screen ##################################################################
@@ -1424,9 +1416,10 @@ screen quick_menu():
         xalign 0.5
         yalign 1.0
 
+        textbutton _("Back") action Rollback()
         textbutton _("Skip") action Skip() alternate Skip(fast=True, confirm=True)
-        textbutton _("Menu") action ShowMenu()
         textbutton _("Auto") action Preference("auto-forward", "toggle")
+        textbutton _("Menu") action ShowMenu()
 
 
 style window:

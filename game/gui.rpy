@@ -14,7 +14,7 @@ init python:
 
 
 ################################################################################
-# GUI Configuration Variables
+## GUI Configuration Variables
 ################################################################################
 
 
@@ -55,13 +55,13 @@ define gui.interface_text_color = '#ffffff'
 ## Fonts and Font Sizes ########################################################
 
 ## The font used for in-game text.
-define gui.default_font = "DejaVuSans.ttf"
+define gui.text_font = "DejaVuSans.ttf"
 
 ## The font used for character names.
-define gui.name_font = "DejaVuSans.ttf"
+define gui.name_text_font = "DejaVuSans.ttf"
 
 ## The font used for out-of-game text.
-define gui.interface_font = "DejaVuSans.ttf"
+define gui.interface_text_font = "DejaVuSans.ttf"
 
 ## The size of normal dialogue text.
 define gui.text_size = 22
@@ -131,15 +131,15 @@ define gui.namebox_tile = False
 ## The placement of dialogue relative to the textbox. These can be a whole
 ## number of pixels relative to the left or top side of the textbox, or 0.5 to
 ## center.
-define gui.text_xpos = 268
-define gui.text_ypos = 50
+define gui.dialogue_xpos = 268
+define gui.dialogue_ypos = 50
 
 ## The maximum width of dialogue text, in pixels.
-define gui.text_width = 744
+define gui.dialogue_width = 744
 
 ## The horizontal alignment of the dialogue text. This can be 0.0 for left-
 ## aligned, 0.5 for centered, and 1.0 for right-aligned.
-define gui.text_xalign = 0.0
+define gui.dialogue_text_xalign = 0.0
 
 
 ## Buttons #####################################################################
@@ -159,19 +159,19 @@ define gui.button_borders = Borders(4, 4, 4, 4)
 define gui.button_tile = False
 
 ## The font used by the button.
-define gui.button_text_font = gui.interface_font
+define gui.button_text_font = gui.interface_text_font
 
 ## The size of the text used by the button.
 define gui.button_text_size = gui.interface_text_size
 
-# The color of button text in various states.
+## The color of button text in various states.
 define gui.button_text_idle_color = gui.idle_color
 define gui.button_text_hover_color = gui.hover_color
 define gui.button_text_selected_color = gui.selected_color
 define gui.button_text_insensitive_color = gui.insensitive_color
 
-# The horizontal alignment of the button text. (0.0 is left, 0.5 is center,
-# 1.0 is right).
+## The horizontal alignment of the button text. (0.0 is left, 0.5 is center, 1.0
+## is right).
 define gui.button_text_xalign = 0.0
 
 
@@ -209,7 +209,7 @@ define gui.choice_button_width = 790
 define gui.choice_button_height = None
 define gui.choice_button_tile = False
 define gui.choice_button_borders = Borders(100, 5, 100, 5)
-define gui.choice_button_text_font = gui.default_font
+define gui.choice_button_text_font = gui.text_font
 define gui.choice_button_text_size = gui.text_size
 define gui.choice_button_text_xalign = 0.5
 define gui.choice_button_text_idle_color = "#cccccc"
@@ -271,6 +271,9 @@ define gui.page_spacing = 0
 
 ## The spacing between file slots.
 define gui.slot_spacing = 10
+
+## The position of the main menu text.
+define gui.main_menu_text_xalign = 1.0
 
 
 ## Frames ######################################################################
@@ -391,10 +394,17 @@ define gui.nvl_thought_xalign = 0.0
 define gui.nvl_button_xpos = 450
 define gui.nvl_button_xalign = 0.0
 
+## Localization ################################################################
+
+## This controls where a line break is permitted. The default is suitable
+## for most languages. A list of available values can be found at https://
+## www.renpy.org/doc/html/style_properties.html#style-property-language
+
+define gui.language = "unicode"
 
 
 ################################################################################
-# Mobile devices
+## Mobile devices
 ################################################################################
 
 init python:
@@ -403,7 +413,7 @@ init python:
     ## on tablets and phones.
     if renpy.variant("touch"):
 
-        gui.quick_button_borders = Borders(60, 14, 60, 0)
+        gui.quick_button_borders = Borders(40, 14, 40, 0)
 
     ## This changes the size and spacing of various GUI elements to ensure they
     ## are easily visible on phones.
