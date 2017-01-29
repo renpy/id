@@ -18,12 +18,17 @@
 # OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
+# TODO:
+#
+# - Allow the creator to specify a list of tags they are interested in,
+#   disabling the auto-detection.
+
 init -100 python in director:
     from store import Action, config
     import store
 
     # The version of the director.
-    version = "0.1"
+    version = "0.2"
 
     # Is the director licensed for commercial use? Yes, you can remove
     # the warning by changing this variable - but it doesn't change the
@@ -293,6 +298,9 @@ init -100 python in director:
         if state.transforms:
             rv += " at " + ", ".join(state.transforms)
 
+        if state.behind:
+            rv += " behind " + ",".join(state.behind)
+
         return rv
 
     def update_ast():
@@ -544,6 +552,23 @@ init -100 python in director:
 
         return state.attributes
 
+    def get_behind_tags(exclude=None):
+        """
+        Get a list of tags the current tag can be placed behind.
+        """
+
+        rv = [ ]
+
+        for t in state.showing:
+            if t in scene_tags:
+                continue
+
+            if t == exclude:
+                continue
+
+            rv.append(t)
+
+        return rv
 
     # Actions ##################################################################
 
@@ -612,7 +637,7 @@ init -100 python in director:
             state.original_transforms = [ ]
             state.transition = None
             state.original_transition = None
-            state.behind = None
+            state.behind = [ ]
             state.original_behind = [ ]
 
             state.added_statement = None
@@ -643,7 +668,7 @@ init -100 python in director:
                 self.tag = node.imspec[0][0]
                 self.attributes = list(node.imspec[0][1:])
                 self.transforms = list(node.imspec[3])
-                self.behind = node.imspec[6]
+                self.behind = list(node.imspec[6])
 
             elif isinstance(node, renpy.ast.Scene):
                 self.kind = "scene"
@@ -689,7 +714,7 @@ init -100 python in director:
             state.transition = self.transition
             state.original_transition = self.transition
             state.behind = self.behind
-            state.original_behind = self.behind
+            state.original_behind = list(self.behind)
 
             state.added_statement = True
             state.change = True
@@ -1127,6 +1152,7 @@ screen director_statement(state):
     $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
     $ transforms = ", ".join(state.transforms) or "(transform)"
     $ behind = state.behind or "(tag)"
+    $ behind_tags = director.get_behind_tags(state.tag)
 
     hbox:
         style_prefix "director_statement"
@@ -1141,9 +1167,9 @@ screen director_statement(state):
             text "at "
             textbutton "[transforms] " action SetField(state, "mode", "transform")
 
-        if state.behind or state.kind in { "show" }:
+        if behind_tags and (state.kind in { "show" }):
             text "behind "
-            textbutton "[behind]"
+            textbutton "[behind]" action SetField(state, "mode", "behind")
 
     null height 14
 
@@ -1336,6 +1362,7 @@ screen director_behind(state):
 
         use director_footer(state)
 
+
 screen director_with(state):
 
     vbox:
@@ -1387,6 +1414,8 @@ screen director():
             use director_attributes(state)
         elif state.mode == "transform":
             use director_transform(state)
+        elif state.mode == "behind":
+            use director_behind(state)
         elif state.mode == "with":
             use director_with(state)
 
