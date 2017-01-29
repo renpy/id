@@ -773,45 +773,47 @@ init -100 python in director:
         def get_selected(self):
             return self.attribute in state.attributes
 
-    class ToggleTransform(Action):
+    class SetList(Action):
         """
-        This action toggles to a transform, and if clicked again removes the
-        transform.
+        When clicked once, sets l to [ v ]. When clicked again, sets l to [ ]
         """
 
-        def __init__(self, transform):
-            self.transform = transform
+        def __init__(self, l, v):
+            self.l = l
+            self.v = v
 
         def __call__(self):
-            if self.transform in state.transforms:
-                state.transforms.remove(self.transform)
+            if self.v in self.l:
+                self.l.remove(self.v)
             else:
-                state.transforms = [ self.transform ]
+                self.l[:] = [ self.v ]
 
             update_ast()
 
         def get_selected(self):
-            return self.transform in state.transforms
+            return self.v in self.l
 
-    class AddTransform(Action):
+    class ToggleList(Action):
         """
-        This action adds a transform to the end of the list of transforms.
-        If clicked again, it removes the transform.
+        Toggles the presence or absence of v in l, appending it to the end
+        of the list when necessary.
         """
 
-        def __init__(self, transform):
-            self.transform = transform
+        def __init__(self, l, v):
+            self.l = l
+            self.v = v
 
         def __call__(self):
-            if self.transform in state.transforms:
-                state.transforms.remove(self.transform)
+            if self.v in self.l:
+                self.l.remove(self.v)
             else:
-                state.transforms.append(self.transform)
+                self.l.append(self.v)
 
             update_ast()
 
         def get_selected(self):
-            return self.transform in state.transforms
+            return self.v in self.l
+
 
     class SetTransition(Action):
         """
@@ -1300,8 +1302,35 @@ screen director_transform(state):
 
                 for t in director.get_transforms():
                     textbutton "[t]":
-                        action director.ToggleTransform(t)
-                        alternate director.AddTransform(t)
+                        action director.SetList(state.transforms, t)
+                        alternate director.ToggleList(state.transforms, t)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
+
+
+screen director_behind(state):
+
+    vbox:
+        xfill True
+
+        use director_statement(state)
+
+        text "Behind:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for t in director.get_behind_tags(state.tag):
+                    textbutton "[t]":
+                        action director.SetList(state.behind, t)
+                        alternate director.ToggleList(state.behind, t)
                         style "director_button"
                         ypadding 0
 
