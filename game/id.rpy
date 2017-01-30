@@ -1151,7 +1151,7 @@ screen director_statement(state):
     $ tag = state.tag or "(tag)"
     $ attributes =  " ".join(director.get_ordered_attributes()) or "(attributes)"
     $ transforms = ", ".join(state.transforms) or "(transform)"
-    $ behind = state.behind or "(tag)"
+    $ behind = ", ".join(state.behind) or "(tag)"
     $ behind_tags = director.get_behind_tags(state.tag)
 
     hbox:
