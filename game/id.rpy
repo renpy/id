@@ -41,6 +41,9 @@ init -100 python in director:
     # A set of tags that should only be used with the scene statement.
     scene_tags = { "bg" }
 
+    # The set of tags that should only be used with the show statement.
+    show_tags = { }
+
     # A list of transforms to use.
     transforms = [ "left", "center", "right" ]
 
@@ -476,7 +479,10 @@ init -100 python in director:
         if state.kind == "scene":
             rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i in scene_tags ]
         elif state.kind == "show":
-            rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
+            if show_tags:
+                rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i in show_tags ]
+            else:
+                rv = [ i for i in renpy.get_available_image_tags() if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
         elif state.kind == "hide":
             rv = [ i for i in renpy.get_available_image_tags() if i in state.showing if not i.startswith("_") if i not in tag_blacklist if i not in scene_tags ]
         else:

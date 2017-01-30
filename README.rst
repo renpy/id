@@ -74,6 +74,10 @@ python code, or hidden using the define statement.
     The set of tags that will be presented for the scene statement, and hidden
     from the show statement.
 
+``director.show_tags = { }``
+    If not empty, only the tags present in this set will be presented for the
+    show statement.
+
 ``director.transforms = [ "left", "center", "right" ]``
     A list of transforms that will be presented as part of the editor.
     In addition to these, any transform defined using the transform
