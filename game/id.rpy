@@ -284,8 +284,6 @@ init -100 python in director:
 
         else:
 
-            l = renpy.get_available_image_attributes(state.tag, state.attributes)
-
             attributes = get_image_attributes()
 
             if attributes is None:
@@ -499,24 +497,7 @@ init -100 python in director:
         if not state.tag:
             return [ ]
 
-        import collections
-
-        attrcount = collections.defaultdict(int)
-        attrtotalpos = collections.defaultdict(float)
-
-
-        for attrlist in renpy.get_available_image_attributes(state.tag, [ ]):
-            for i, attr in enumerate(attrlist):
-                attrcount[attr] += 1
-                attrtotalpos[attr] += i
-
-        l = [ ]
-
-        for attr in attrcount:
-            l.append((attrtotalpos[attr] / attrcount[attr], component_key(attr), attr))
-
-        l.sort()
-        return [ i[2] for i in l ]
+        return renpy.get_ordered_image_attributes(state.tag, [ ], component_key)
 
     def get_transforms():
         """
@@ -534,15 +515,7 @@ init -100 python in director:
         if state.tag is None:
             return None
 
-        l = renpy.get_available_image_attributes(state.tag, state.attributes)
-
-        if len(l) != 1:
-            return None
-
-        if len(l[0]) != len(state.attributes):
-            return None
-
-        return l[0]
+        return renpy.check_image_attributes(state.tag, state.attributes)
 
     def get_ordered_attributes():
         """
@@ -792,12 +765,10 @@ init -100 python in director:
 
                 compatible = set()
 
-                for i in renpy.get_available_image_attributes(state.tag, [ self.attribute ]):
-                    for j in i:
-                        compatible.add(j)
+                for i in renpy.get_ordered_image_attributes(state.tag, [ self.attribute ]):
+                    compatible.add(i)
 
                 state.attributes = [ i for i in state.attributes if i in compatible ]
-
 
             update_ast()
 
