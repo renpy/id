@@ -23,7 +23,9 @@
 # - Allow the creator to specify a list of tags they are interested in,
 #   disabling the auto-detection.
 
-init -100 python in director:
+init offset = -100
+
+init python in director:
     from store import Action, config
     import store
 
