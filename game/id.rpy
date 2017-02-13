@@ -44,7 +44,7 @@ init python in director:
     scene_tags = { "bg" }
 
     # The set of tags that should only be used with the show statement.
-    show_tags = { }
+    show_tags = set()
 
     # A list of transforms to use.
     transforms = [ "left", "center", "right" ]
