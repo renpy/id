@@ -58,7 +58,7 @@ python code, or hidden using the define statement.
     The set of tags that will be presented for the scene statement, and hidden
     from the show statement.
 
-``director.show_tags = { }``
+``director.show_tags = set()``
     If not empty, only the tags present in this set will be presented for the
     show statement.
 
@@ -140,3 +140,15 @@ used to develop commercial games.
 I haven't figured out the commercial terms yet, but you should expect them
 to be quite nominal. Email pytom@bishoujo.us if you really want to use
 this code to make a commercial game.
+
+
+Changelog
+---------
+
+2.0
+    This release required Ren'Py 6.99.12.3 to run. It adds support for
+    the behind clause, adds the director.show_tags set, and adds some
+    basic support for attribute images.
+
+1.0
+    This was the initial release.
