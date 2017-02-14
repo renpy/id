@@ -6,7 +6,7 @@ isn't meant as a replacement for the text editor, which is required to add
 most statements. The director lets you add - with a live preview - scene,
 show, hide and with statements, directing image presentation.
 
-Note that this is not an open source project. It is free for commercial
+Note that this is not an open source project. It is free for non-commercial
 use. Please see the full license below for more details.
 
 Download and Demo
