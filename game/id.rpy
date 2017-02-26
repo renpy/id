@@ -265,17 +265,11 @@ init python in director:
     renpy.arguments.register_command("director", command)
 
 
-    def get_statement():
-        """
-        If a statement is defined enough to implement, returns the text
-        that can be added to the AST. Otherwise, returns None.
-        """
+    def get_scene_show_hide_statement():
 
-        if state.kind is None:
-            return None
 
-        if state.kind == "with":
-            return "with {}".format(state.transition)
+        if state.kind == "scene" and state.tag is None:
+            return "scene"
 
         if state.tag is None:
             return None
@@ -303,6 +297,25 @@ init python in director:
 
         if state.behind:
             rv += " behind " + ",".join(state.behind)
+
+        return
+
+
+    def get_statement():
+        """
+        If a statement is defined enough to implement, returns the text
+        that can be added to the AST. Otherwise, returns None.
+        """
+
+        if state.kind is None:
+            return None
+
+        elif state.kind == "with":
+            return "with {}".format(state.transition)
+
+        else:
+            return get_scene_show_hide_statement()
+
 
         return rv
 
@@ -654,9 +667,20 @@ init python in director:
             elif isinstance(node, renpy.ast.Scene):
                 self.kind = "scene"
 
-                self.tag = node.imspec[0][0]
-                self.attributes = list(node.imspec[0][1:])
-                self.transforms = list(node.imspec[3])
+                # The scene statement does not need to show an image.
+                if node.imspec is not None:
+
+                    self.tag = node.imspec[0][0]
+                    self.attributes = list(node.imspec[0][1:])
+                    self.transforms = list(node.imspec[3])
+                    self.behind = list(node.imspec[6])
+
+                else:
+
+                    self.tag = None
+                    self.attributes = [ ]
+                    self.transforms = [ ]
+                    self.behind = [ ]
 
 
             elif isinstance(node, renpy.ast.Hide):
@@ -684,7 +708,10 @@ init python in director:
             elif self.kind == "hide":
                 state.mode = "tag"
             else:
-                state.mode = "attributes"
+                if self.tag is None:
+                    state.mode = "tag"
+                else:
+                    state.mode = "attributes"
 
             state.tag = self.tag
             state.attributes = self.attributes
