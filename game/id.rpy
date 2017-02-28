@@ -1487,11 +1487,14 @@ screen director_button():
             style "director_launch_button"
             action director.Start()
 
-style director_launch_button is quick_button:
+style director_launch_button is _button:
     xalign 0.5
     yalign 0.0
     xpadding 50
-    bottom_padding 10
+    top_margin 20
+    top_padding 5
+    bottom_padding 5
 
-style director_launch_button_text is quick_button_text
+style director_launch_button_text is _button_text:
+    size gui._scale(16)
 
