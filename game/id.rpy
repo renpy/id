@@ -283,7 +283,7 @@ init python in director:
             attributes = get_image_attributes()
 
             if attributes is None:
-                return
+                return None
 
         rv = [ state.kind ]
 
@@ -298,7 +298,7 @@ init python in director:
         if state.behind:
             rv += " behind " + ",".join(state.behind)
 
-        return
+        return rv
 
 
     def get_statement():
