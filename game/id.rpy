@@ -52,6 +52,18 @@ init python in director:
     # A list of transitions to use.
     transitions = [ "dissolve", "pixellate" ]
 
+    # A list of audio channels we know about.
+    audio_channels = [ "music", "sound", "audio"]
+
+    # A list of audio patterns to use for all channels.
+    audio_patterns = [ "*.opus", "*.ogg", "*.mp3" ]
+
+    # A map from channel name to the audio patterns to use for that channel.
+    audio_channel_patterns = { }
+
+    # A map from channel name to the audio files available on that channel.
+    audio_files = { }
+
     # Should we offer a button to access the director?
     button = True
 
