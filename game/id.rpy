@@ -639,6 +639,34 @@ init python in director:
 
             update_ast()
 
+
+    def is_scene_show_hide_editable(node):
+        """
+        Return true if a Scene, Show, or Hide ATL node is editable, or
+        False otherwise.
+        """
+
+        if not node.imspec:
+            return True
+
+        if node.imspec[1]: # expression
+            return False
+
+        if node.imspec[2]: # tag
+            return False
+
+        if node.imspec[4]: # layer
+            return False
+
+        if node.imspec[5]: # zorder
+            return False
+
+        if getattr(node, "atl", None):
+            return False
+
+        return True
+
+
     class ChangeStatement(Action):
         """
         An action that changes the statement at `filename`:`linenumber`.
@@ -654,7 +682,10 @@ init python in director:
             self.attributes = [ ]
             self.transforms = [ ]
             self.transition = None
-            self.behind = None
+            self.behind = [ ]
+
+            self.sensitive = True
+
 
             if isinstance(node, renpy.ast.Show):
                 self.kind = "show"
@@ -663,6 +694,8 @@ init python in director:
                 self.attributes = list(node.imspec[0][1:])
                 self.transforms = list(node.imspec[3])
                 self.behind = list(node.imspec[6])
+
+                self.sensitive = is_scene_show_hide_editable(node)
 
             elif isinstance(node, renpy.ast.Scene):
                 self.kind = "scene"
@@ -682,6 +715,7 @@ init python in director:
                     self.transforms = [ ]
                     self.behind = [ ]
 
+                self.sensitive = is_scene_show_hide_editable(node)
 
             elif isinstance(node, renpy.ast.Hide):
                 self.kind = "hide"
@@ -690,11 +724,15 @@ init python in director:
                 self.attributes = list(node.imspec[0][1:])
                 self.transforms = list(node.imspec[3])
 
+                self.sensitive = is_scene_show_hide_editable(node)
+
             elif isinstance(node, renpy.ast.With):
                 self.kind = "with"
                 self.transition = node.expr
 
 
+        def get_sensitive(self):
+            return self.sensitive
 
         def __call__(self):
             state.filename = self.lle.filename
