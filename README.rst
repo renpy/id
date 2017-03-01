@@ -145,6 +145,12 @@ this code to make a commercial game.
 Changelog
 ---------
 
+3.0
+    This release supports screen language statements that do not not have
+    an associated image. It also determines if a scene, show, or hide
+    statement is not editable, and makes the button insensitive if that
+    is the case.
+
 2.0
     This release required Ren'Py 6.99.12.3 to run. It adds support for
     the behind clause, adds the director.show_tags set, and adds some

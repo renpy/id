@@ -30,7 +30,7 @@ init python in director:
     import store
 
     # The version of the director.
-    version = "2.0"
+    version = "3.0"
 
     # Is the director licensed for commercial use? Yes, you can remove
     # the warning by changing this variable - but it doesn't change the
