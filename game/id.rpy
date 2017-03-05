@@ -1090,6 +1090,28 @@ init 100 python hide in director:
         transforms.append(name)
         transforms.sort(key=component_key)
 
+    import fnmatch
+
+    for c in audio_channels:
+
+        patterns = audio_channel_patterns.get(c, audio_patterns)
+
+        if c not in audio_files:
+            audio_files[c] = [ ]
+
+        for fn in renpy.list_files():
+
+            for p in patterns:
+                if fnmatch.fnmatch(fn, p):
+                    break
+            else:
+                continue
+
+            audio_files[c].append(fn)
+
+        audio_files[c].sort()
+
+
 
 # Styles and screens ###########################################################
 
