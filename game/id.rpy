@@ -1,4 +1,4 @@
-# Copyright 2016 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2017 Tom Rothamel <pytom@bishoujo.us>
 
 # Permission to use, copy, modify, and/or distribute this software for
 # non-commerical purposes is hereby granted, provided that the above
@@ -55,7 +55,8 @@ init python in director:
     # A list of audio channels we know about.
     audio_channels = [ "music", "sound", "audio"]
 
-    # A list of audio patterns to use for all channels.
+    # A list of audio patterns to use for channels that do not have a
+    # more specific list of patterns already defined.
     audio_patterns = [ "*.opus", "*.ogg", "*.mp3" ]
 
     # A map from channel name to the audio patterns to use for that channel.
