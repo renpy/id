@@ -1307,6 +1307,9 @@ screen director_kind(state):
                 textbutton "show" action director.SetKind("show")
                 textbutton "hide" action director.SetKind("hide")
                 textbutton "with" action director.SetKind("with")
+                textbutton "play" action director.SetKind("play")
+                textbutton "queue" action director.SetKind("queue")
+                textbutton "stop" action director.SetKind("stop")
 
         use director_footer(state)
 
