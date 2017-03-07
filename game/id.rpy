@@ -439,7 +439,6 @@ init python in director:
         state.mode = "attributes"
 
 
-
     def find_statement(filename, line, delta, limit=10):
         """
         Tries to find a statement near `line`. If it can't find it on `line`
@@ -779,15 +778,21 @@ init python in director:
                 self.kind = name[0]
                 self.channel = p["channel"] or name[1]
 
-                try:
-                    self.audio = eval(p["file"])
-                except:
-                    return
+                if "file" in p:
+                    try:
+                        self.audio = eval(p["file"])
+                    except:
+                        return
+                else:
+                    self.audio = None
+
 
                 if p.get("loop", None):
                     return
 
-                if p.get("fadeout", "None") != "None":
+                fadeout = p.get("fadeout", None)
+
+                if (fadeout is not None) and (fadeout != "None"):
                     return
 
                 if p.get("if_changed", False):
@@ -1438,6 +1443,7 @@ screen director_audio_statement(state):
         if state.kind != "stop":
             textbutton "[audio!q]" action SetField(state, "mode", "audio")
 
+    null height 14
 
 screen director_footer(state):
 
