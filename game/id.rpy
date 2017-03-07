@@ -90,12 +90,32 @@ init python in director:
         renpy.ast.EndTranslate,
     )
 
-    DISPLAY_NODES = (
-        renpy.ast.Show,
-        renpy.ast.Hide,
-        renpy.ast.Scene,
-        renpy.ast.With,
-    )
+    def is_play(n):
+        return isinstance(n, renpy.ast.UserStatement) and n.get_name().startswith("play ")
+
+    def is_queue(n):
+        return isinstance(n, renpy.ast.UserStatement) and n.get_name().startswith("queue ")
+
+    def is_stop(n):
+        return isinstance(n, renpy.ast.UserStatement) and n.get_name().startswith("stop ")
+
+
+    def is_interesting(n):
+
+        if isinstance(n, (
+            renpy.ast.Show,
+            renpy.ast.Hide,
+            renpy.ast.Scene,
+            renpy.ast.With,
+        )):
+
+            return True
+
+        if is_play(n) or is_queue(n) or is_stop(n):
+            return True
+
+        return False
+
 
     # Initialize the state object if it doesn't exist.
     if state is None:
@@ -139,6 +159,14 @@ init python in director:
 
         state.behind = [ ]
         state.original_behind = [ ]
+
+        # The audio channel.
+        state.channel = None
+        state.original_channel = None
+
+        # The audio file.
+        state.audio = None
+        state.original_audio = None
 
         # Has the new line been added to ast.
         state.added_statement = None
@@ -211,7 +239,7 @@ init python in director:
             else:
                 add_action = AddStatement(lle)
 
-            if isinstance(node, DISPLAY_NODES):
+            if is_interesting(node):
                 change_action = ChangeStatement(lle, node)
             else:
                 change_action = None
@@ -421,7 +449,7 @@ init python in director:
 
         def display(nodes):
             for n in nodes:
-                if isinstance(n, DISPLAY_NODES):
+                if is_interesting(n):
                     return True
 
             return False
@@ -636,16 +664,27 @@ init python in director:
 
             state.kind = None
             state.mode = "kind"
+
             state.tag = None
             state.original_tag = None
+
             state.attributes = [ ]
             state.original_attributes = [ ]
+
             state.transforms = [ ]
             state.original_transforms = [ ]
+
             state.transition = None
             state.original_transition = None
+
             state.behind = [ ]
             state.original_behind = [ ]
+
+            state.channel = None
+            state.original_channel = None
+
+            state.audio = None
+            state.original_audio = None
 
             state.added_statement = None
             state.change = False
