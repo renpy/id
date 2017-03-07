@@ -349,7 +349,7 @@ init python in director:
         if state.audio is None:
             return None
 
-        return state.audio.replace("\\", "\\\\").replace("'", "\\'")
+        return "'" + state.audio.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
     def get_play_queue_statement():
@@ -359,7 +359,7 @@ init python in director:
         if state.audio is None:
             return None
 
-        return "{} {} '{}'".format(state.kind, state.channel, quote_audio())
+        return "{} {} {}".format(state.kind, state.channel, quote_audio())
 
     def get_stop_statement():
         if state.channel is None:
