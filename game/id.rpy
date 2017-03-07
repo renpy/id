@@ -341,6 +341,31 @@ init python in director:
 
         return rv
 
+    def quote_audio():
+        """
+        Returns the quoted audio filename.
+        """
+
+        if state.audio is None:
+            return None
+
+        return state.audio.replace("\\", "\\\\").replate("'", "\\'")
+
+
+    def get_play_queue_statement():
+        if state.channel is None:
+            return None
+
+        if state.audio is None:
+            return None
+
+        return "{} {} '{}'".format(state.kind, state.channel, quote_audio())
+
+    def get_stop_statement():
+        if state.channel is None:
+            return None
+
+        return "{} {}".format(state.kind, state.channel)
 
     def get_statement():
         """
@@ -353,6 +378,12 @@ init python in director:
 
         elif state.kind == "with":
             return "with {}".format(state.transition)
+
+        elif state.kind in ("play", "queue"):
+            return get_play_queue_statement()
+
+        elif state.kind == "stop":
+            return get_stop_statement()
 
         else:
             return get_scene_show_hide_statement()
@@ -1000,6 +1031,28 @@ init python in director:
         def get_selected(self):
             return self.transition == state.transition
 
+    class SetChannel(Action):
+        """
+        This sets the channel used by an audio statement.
+        """
+
+        def __init__(self, channel):
+            self.channel = channel
+
+        def __call__(self):
+            if state.kind != "stop":
+                state.mode = "audio"
+
+            state.channel = self.channel
+
+            update_ast()
+
+        def get_selected(self):
+            return self.channel == state.channel
+
+
+
+
 
     class Commit(Action):
         """
@@ -1351,6 +1404,20 @@ screen director_with_statement(state):
 
     null height 14
 
+screen director_audio_statement(state):
+
+    $ channel = state.channel or "(channel)"
+    $ audio = director.quote_audio() or "(filename)"
+
+    hbox:
+        style_prefix "director_statement"
+
+        textbutton "[state.kind] " action SetField(state, "mode", "kind")
+        textbutton "[channel] " action SetField(state, "mode", "channel")
+
+        if state.kind != "stop":
+            textbutton "[audio]" action SetField(state, "mode", "audio")
+
 
 screen director_footer(state):
 
@@ -1557,6 +1624,32 @@ screen director_with(state):
 
         use director_footer(state)
 
+screen director_channel(state):
+
+    vbox:
+        xfill True
+
+        use director_audio_statement(state)
+
+        text "Channel:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for c in director.audio_channels:
+                    textbutton "[c]":
+                        action director.SetChannel(c)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
+
+
 
 screen director():
     zorder 99
@@ -1587,6 +1680,8 @@ screen director():
             use director_behind(state)
         elif state.mode == "with":
             use director_with(state)
+        elif state.mode == "channel":
+            use director_channel(state)
 
 
         hbox:
