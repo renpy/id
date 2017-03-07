@@ -349,7 +349,7 @@ init python in director:
         if state.audio is None:
             return None
 
-        return state.audio.replace("\\", "\\\\").replate("'", "\\'")
+        return state.audio.replace("\\", "\\\\").replace("'", "\\'")
 
 
     def get_play_queue_statement():
@@ -895,6 +895,7 @@ init python in director:
 
             update_ast()
 
+
     class SetKind(Action):
 
         def __init__(self, kind):
@@ -919,6 +920,7 @@ init python in director:
 
             update_ast()
 
+
     class SetTag(Action):
         """
         An action that sets the image tag.
@@ -941,6 +943,7 @@ init python in director:
 
         def get_selected(self):
             return self.tag == state.tag
+
 
     class ToggleAttribute(Action):
         """
@@ -973,6 +976,7 @@ init python in director:
         def get_selected(self):
             return self.attribute in state.attributes
 
+
     class SetList(Action):
         """
         When clicked once, sets l to [ v ]. When clicked again, sets l to [ ]
@@ -992,6 +996,7 @@ init python in director:
 
         def get_selected(self):
             return self.v in self.l
+
 
     class ToggleList(Action):
         """
@@ -1031,6 +1036,7 @@ init python in director:
         def get_selected(self):
             return self.transition == state.transition
 
+
     class SetChannel(Action):
         """
         This sets the channel used by an audio statement.
@@ -1051,7 +1057,21 @@ init python in director:
             return self.channel == state.channel
 
 
+    class SetAudio(Action):
+        """
+        This sets the audio file played by a statement.
+        """
 
+        def __init__(self, filename):
+            self.filename = filename
+
+        def __call__(self):
+            state.audio = self.filename
+
+            update_ast()
+
+        def get_selected(self):
+            return state.audio == self.filename
 
 
     class Commit(Action):
@@ -1416,7 +1436,7 @@ screen director_audio_statement(state):
         textbutton "[channel] " action SetField(state, "mode", "channel")
 
         if state.kind != "stop":
-            textbutton "[audio]" action SetField(state, "mode", "audio")
+            textbutton "[audio!q]" action SetField(state, "mode", "audio")
 
 
 screen director_footer(state):
@@ -1624,6 +1644,7 @@ screen director_with(state):
 
         use director_footer(state)
 
+
 screen director_channel(state):
 
     vbox:
@@ -1644,6 +1665,32 @@ screen director_channel(state):
                 for c in director.audio_channels:
                     textbutton "[c]":
                         action director.SetChannel(c)
+                        style "director_button"
+                        ypadding 0
+
+        use director_footer(state)
+
+
+screen director_audio(state):
+
+    vbox:
+        xfill True
+
+        use director_audio_statement(state)
+
+        text "Audio Filename:"
+
+        frame:
+            style "empty"
+            left_margin 10
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                for fn in director.audio_files.get(state.channel, [ ]):
+                    textbutton "[fn]":
+                        action director.SetAudio(fn)
                         style "director_button"
                         ypadding 0
 
@@ -1682,6 +1729,8 @@ screen director():
             use director_with(state)
         elif state.mode == "channel":
             use director_channel(state)
+        elif state.mode == "audio":
+            use director_audio(state)
 
 
         hbox:
