@@ -738,6 +738,35 @@ init python in director:
 
             self.sensitive = True
 
+            def audio(n):
+
+                self.sensitive = False
+
+                name = n.parsed[0]
+                p = n.parsed[1]
+
+                self.kind = name[0]
+                self.channel = p["channel"] or name[1]
+
+                try:
+                    self.audio = eval(p["file"])
+                except:
+                    return
+
+                if p.get("loop", None):
+                    return
+
+                if p.get("fadeout", "None") != "None":
+                    return
+
+                if p.get("if_changed", False):
+                    return
+
+                if p.get("fadein", "0") != "0":
+                    return
+
+                self.sensitive = True
+
 
             if isinstance(node, renpy.ast.Show):
                 self.kind = "show"
@@ -782,6 +811,8 @@ init python in director:
                 self.kind = "with"
                 self.transition = node.expr
 
+            elif is_play(node) or is_queue(node) or is_stop(node):
+                audio(node)
 
         def get_sensitive(self):
             return self.sensitive
@@ -797,6 +828,10 @@ init python in director:
                 state.mode = "with"
             elif self.kind == "hide":
                 state.mode = "tag"
+            elif self.kind == "play" or self.kind == "queue":
+                state.mode = "audio"
+            elif self.kind == "stop":
+                state.mode = "channel"
             else:
                 if self.tag is None:
                     state.mode = "tag"
@@ -804,15 +839,25 @@ init python in director:
                     state.mode = "attributes"
 
             state.tag = self.tag
-            state.attributes = self.attributes
             state.original_tag = self.tag
+
+            state.attributes = self.attributes
             state.original_attributes = list(self.attributes)
+
             state.transforms = list(self.transforms)
             state.original_transforms = list(self.transforms)
+
             state.transition = self.transition
             state.original_transition = self.transition
+
             state.behind = self.behind
             state.original_behind = list(self.behind)
+
+            state.channel = self.channel
+            state.original_channel = self.channel
+
+            state.audio = self.audio
+            state.original_audio = self.audio
 
             state.added_statement = True
             state.change = True
@@ -837,6 +882,9 @@ init python in director:
 
             if self.kind == "with":
                 state.mode = "with"
+
+            if self.kind in ("play", "queue", "stop"):
+                state.mode = "channel"
 
             update_ast()
 
