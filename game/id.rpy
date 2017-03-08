@@ -1690,9 +1690,16 @@ screen director_audio(state):
             style "empty"
             left_margin 10
 
-            hbox:
-                box_wrap True
-                spacing 20
+            viewport:
+                scrollbars "vertical"
+                ymaximum director.source_height
+                mousewheel True
+                yinitial 0.0
+                yfill False
+
+                has hbox:
+                    box_wrap True
+                    spacing 20
 
                 for fn in director.audio_files.get(state.channel, [ ]):
                     textbutton "[fn]":
