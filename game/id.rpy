@@ -90,6 +90,15 @@ init python in director:
         renpy.ast.EndTranslate,
     )
 
+    def audio_code_to_filename(channel, fn):
+        return
+
+    def audio_filename_to_code(channel, fn):
+        return fn
+
+    def audio_filename_to_display(channel, fn):
+        return fn
+
     def is_play(n):
         return isinstance(n, renpy.ast.UserStatement) and n.get_name().startswith("play ")
 
@@ -349,7 +358,12 @@ init python in director:
         if state.audio is None:
             return None
 
-        return "'" + state.audio.replace("\\", "\\\\").replace("'", "\\'") + "'"
+        if state.channel is not None:
+            audio = audio_filename_to_code(state.channel, state.audio)
+        else:
+            audio = state.audio
+
+        return "'" + audio.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
     def get_play_queue_statement():
@@ -783,9 +797,10 @@ init python in director:
                         self.audio = eval(p["file"])
                     except:
                         return
+
+                    self.audio = audio_code_to_filename(self.channel, self.audio)
                 else:
                     self.audio = None
-
 
                 if p.get("loop", None):
                     return
@@ -1702,7 +1717,9 @@ screen director_audio(state):
                     spacing 20
 
                 for fn in director.audio_files.get(state.channel, [ ]):
-                    textbutton "[fn]":
+                    $ elided_fn = director.audio_filename_to_display(state.channel, fn)
+
+                    textbutton "[elided_fn]":
                         action director.SetAudio(fn)
                         style "director_button"
                         ypadding 0
