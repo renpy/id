@@ -53,7 +53,7 @@ init python in director:
     transitions = [ "dissolve", "pixellate" ]
 
     # A list of audio channels we know about.
-    audio_channels = [ "music", "sound", "audio"]
+    audio_channels = [ "music", "sound", "audio", "voice"]
 
     # A list of audio patterns to use for channels that do not have a
     # more specific list of patterns already defined.
@@ -108,6 +108,9 @@ init python in director:
     def is_stop(n):
         return isinstance(n, renpy.ast.UserStatement) and n.get_name().startswith("stop ")
 
+    def is_voice(n):
+        return isinstance(n, renpy.ast.UserStatement) and (n.get_name() == "voice")
+
 
     def is_interesting(n):
 
@@ -120,7 +123,7 @@ init python in director:
 
             return True
 
-        if is_play(n) or is_queue(n) or is_stop(n):
+        if is_play(n) or is_queue(n) or is_stop(n) or is_voice(n):
             return True
 
         return False
@@ -381,6 +384,12 @@ init python in director:
 
         return "{} {}".format(state.kind, state.channel)
 
+    def get_voice_statement():
+        if state.audio is None:
+            return None
+
+        return "voice {}".format(quote_audio())
+
     def get_statement():
         """
         If a statement is defined enough to implement, returns the text
@@ -398,6 +407,9 @@ init python in director:
 
         elif state.kind == "stop":
             return get_stop_statement()
+
+        elif state.kind == "voice":
+            return get_voice_statement()
 
         else:
             return get_scene_show_hide_statement()
@@ -865,6 +877,21 @@ init python in director:
             elif is_play(node) or is_queue(node) or is_stop(node):
                 audio(node)
 
+            elif is_voice(node):
+                p = node.parsed[1]
+
+                self.kind = "voice"
+                self.sensitive = False
+                self.channel = "voice"
+
+                try:
+                    self.audio = eval(p)
+                except:
+                    return
+
+                self.sensitive = True
+
+
         def get_sensitive(self):
             return self.sensitive
 
@@ -883,6 +910,8 @@ init python in director:
                 state.mode = "audio"
             elif self.kind == "stop":
                 state.mode = "channel"
+            elif self.kind == "voice":
+                state.mode = "audio"
             else:
                 if self.tag is None:
                     state.mode = "tag"
@@ -937,6 +966,10 @@ init python in director:
 
             if self.kind in ("play", "queue", "stop"):
                 state.mode = "channel"
+
+            if self.kind == "voice":
+                state.channel = "voice"
+                state.mode = "audio"
 
             update_ast()
 
@@ -1453,7 +1486,9 @@ screen director_audio_statement(state):
         style_prefix "director_statement"
 
         textbutton "[state.kind] " action SetField(state, "mode", "kind")
-        textbutton "[channel] " action SetField(state, "mode", "channel")
+
+        if state.kind != "voice":
+            textbutton "[channel] " action SetField(state, "mode", "channel")
 
         if state.kind != "stop":
             textbutton "[audio!q]" action SetField(state, "mode", "audio")
@@ -1505,6 +1540,7 @@ screen director_kind(state):
                 textbutton "play" action director.SetKind("play")
                 textbutton "queue" action director.SetKind("queue")
                 textbutton "stop" action director.SetKind("stop")
+                textbutton "voice" action director.SetKind("voice")
 
         use director_footer(state)
 
