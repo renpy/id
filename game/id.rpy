@@ -76,7 +76,7 @@ init python in director:
     spacing = 1
 
     # The spacing between two display lines.
-    display_spacing = 0
+    director_spacing = 0
 
     # The spacing between two non-display lines.
     other_spacing = 0
@@ -519,7 +519,7 @@ init python in director:
         if previous_display ^ next_display:
             return spacing
         elif previous_display:
-            return display_spacing
+            return director_spacing
         else:
             return other_spacing
 

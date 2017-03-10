@@ -78,15 +78,15 @@ python code, or hidden using the define statement.
     making available the director.Start action.
 
 ``director.spacing = 1``
-    The spacing between a display (scene, show, hide, or with) and a non-display
-    line, or vice versa. These spacings should be 0 or 1 lines, a higher spacing
+    The spacing between a director (scene, show, hide, with, play, queue, and voice) line
+    and a non-director line, or vice versa. These spacings should be 0 or 1 lines, a higher spacing
     may not work.
 
-``director.display_spacing = 0``
-    The spacing between two consecutive display lines.
+``director.director_spacing = 0``
+    The spacing between two consecutive director lines.
 
 ``director.other_spacing = 0``
-    The spacing between two consecutive non-display lines.
+    The spacing between two consecutive non-director lines.
 
 ``director.source_height = 280``
     The spacing of the list of source code lines in the director. (This is
