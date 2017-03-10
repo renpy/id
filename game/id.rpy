@@ -53,7 +53,10 @@ init python in director:
     transitions = [ "dissolve", "pixellate" ]
 
     # A list of audio channels we know about.
-    audio_channels = [ "music", "sound", "audio", "voice"]
+    audio_channels = [ "music", "sound", "audio" ]
+
+    # The name of the voice channel.
+    voice_channel = "voice"
 
     # A list of audio patterns to use for channels that do not have a
     # more specific list of patterns already defined.
@@ -1305,7 +1308,7 @@ init 100 python hide in director:
 
     import fnmatch
 
-    for c in audio_channels:
+    for c in audio_channels + [ voice_channel ]:
 
         patterns = audio_channel_patterns.get(c, audio_patterns)
 
