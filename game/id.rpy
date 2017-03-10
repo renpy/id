@@ -81,8 +81,8 @@ init python in director:
     # The spacing between two non-display lines.
     other_spacing = 0
 
-    # The maximum height of the source code list.
-    source_height = 280
+    # The maximum height of viewports containing scrolling information.
+    viewport_height = 280
 
     state = renpy.session.get("director", None)
 
@@ -1389,7 +1389,7 @@ screen director_lines(state):
 
         viewport:
             scrollbars "vertical"
-            ymaximum director.source_height
+            ymaximum director.viewport_height
             mousewheel True
             yinitial 1.0
             yfill False
@@ -1746,7 +1746,7 @@ screen director_audio(state):
 
             viewport:
                 scrollbars "vertical"
-                ymaximum director.source_height
+                ymaximum director.viewport_height
                 mousewheel True
                 yinitial 0.0
                 yfill False

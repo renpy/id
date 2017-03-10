@@ -50,6 +50,10 @@ There are a number of variables defined in the director namespace that control
 how the interactive director functions. These may be either updated using
 python code, or hidden using the define statement.
 
+
+Scene, Show, and Hide
+^^^^^^^^^^^^^^^^^^^^^
+
 ``director.tag_blacklist = { "black", "text", "vtext" }``
     A blacklist of tags that will not be shown for the show, scene, or hide
     statements.
@@ -68,14 +72,43 @@ python code, or hidden using the define statement.
     statement outside of common code will be added to the list of
     transforms, which is then sorted.
 
+With
+^^^^
+
 ``director.transitions = [ "dissolve", "pixellate" ]``
     A list of transitions that are available to the with statement. Since
     transitions can't be auto-detected, these must be added manually.
+
+Play, Queue, Stop, and Voice
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``director.audio_channels = [ "music", "sound", "audio" ]``
+    The name of the audio channels that can be used with the play, show
+    and stop statements.
+
+``director.voice_channel = "voice"``
+    The name of the audio channel used by voice.
+
+``director.audio_patterns = [ "*.opus", "*.ogg", "*.mp3" ]``
+    The default list of audio patterns that are used to match the files
+    available in an audio channel.
+
+``director.audio_channel_patterns = { }``
+    A map from a channel name to the list of audio patterns that are
+    available in that audio channel. For example, if this is set to
+    ``{ 'sound' : [ 'sound/*.opus' ], 'music' : [ 'music/*.opus' ] }`` the
+    music and sound channels get their own lists of patterns.
+
+Access
+^^^^^^
 
 ``director.button = True``
     If True, the director displays a screen with a button to access the
     director window. If False, the game can provide it's own access, by
     making available the director.Start action.
+
+Line Spacing
+^^^^^^^^^^^^
 
 ``director.spacing = 1``
     The spacing between a director (scene, show, hide, with, play, queue, and voice) line
@@ -88,9 +121,11 @@ python code, or hidden using the define statement.
 ``director.other_spacing = 0``
     The spacing between two consecutive non-director lines.
 
-``director.source_height = 280``
-    The spacing of the list of source code lines in the director. (This is
-    just the lines themselves, not the buttons.)
+Viewport
+^^^^^^^^
+
+``director.viewport_height = 280``
+    The maximum height of scrolling viewports used by the director.
 
 The director can also be customized by editing its styles.
 
@@ -144,6 +179,10 @@ this code to make a commercial game.
 
 Changelog
 ---------
+
+4.0
+    This release adds support for the play, queue, stop, and voice
+    statements. Some variables have been renamed.
 
 3.0
     This release supports screen language statements that do not not have
