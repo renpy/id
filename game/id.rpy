@@ -1518,6 +1518,30 @@ screen director_footer(state):
         if state.change:
             textbutton "Remove" action director.Remove()
 
+
+# Formats the choices.
+screen director_choices(title):
+
+    text title size 20
+
+    frame:
+        style "empty"
+        left_margin 10
+
+        viewport:
+            scrollbars "vertical"
+            ymaximum director.viewport_height
+            mousewheel True
+            yinitial 0.0
+            yfill False
+
+            hbox:
+                box_wrap True
+                spacing 20
+
+                transclude
+
+
 screen director_kind(state):
 
     vbox:
@@ -1525,25 +1549,16 @@ screen director_kind(state):
 
         use director_statement(state)
 
-        text "Statement:" size 20
+        use director_choices("Statement:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-
-                box_wrap True
-                spacing 20
-
-                textbutton "scene" action director.SetKind("scene")
-                textbutton "show" action director.SetKind("show")
-                textbutton "hide" action director.SetKind("hide")
-                textbutton "with" action director.SetKind("with")
-                textbutton "play" action director.SetKind("play")
-                textbutton "queue" action director.SetKind("queue")
-                textbutton "stop" action director.SetKind("stop")
-                textbutton "voice" action director.SetKind("voice")
+            textbutton "scene" action director.SetKind("scene")
+            textbutton "show" action director.SetKind("show")
+            textbutton "hide" action director.SetKind("hide")
+            textbutton "with" action director.SetKind("with")
+            textbutton "play" action director.SetKind("play")
+            textbutton "queue" action director.SetKind("queue")
+            textbutton "stop" action director.SetKind("stop")
+            textbutton "voice" action director.SetKind("voice")
 
         use director_footer(state)
 
@@ -1555,20 +1570,11 @@ screen director_tag(state):
 
         use director_statement(state)
 
-        text "Tag:" size 20
+        use director_choices("Tag:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-
-                box_wrap True
-                spacing 20
-
-                for t in director.get_tags():
-                    textbutton "[t]":
-                        action director.SetTag(t)
+            for t in director.get_tags():
+                textbutton "[t]":
+                    action director.SetTag(t)
 
         use director_footer(state)
 
@@ -1580,47 +1586,13 @@ screen director_attributes(state):
 
         use director_statement(state)
 
-        text "Attributes:"
+        use director_choices("Attributes:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.get_attributes():
-                    textbutton "[t]":
-                        action director.ToggleAttribute(t)
-                        style "director_button"
-                        ypadding 0
-
-        use director_footer(state)
-
-
-screen director_attributes(state):
-
-    vbox:
-        xfill True
-
-        use director_statement(state)
-
-        text "Attributes:"
-
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.get_attributes():
-                    textbutton "[t]":
-                        action director.ToggleAttribute(t)
-                        style "director_button"
-                        ypadding 0
+            for t in director.get_attributes():
+                textbutton "[t]":
+                    action director.ToggleAttribute(t)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
@@ -1632,22 +1604,14 @@ screen director_transform(state):
 
         use director_statement(state)
 
-        text "Transforms:"
+        use director_choices("Transforms:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.get_transforms():
-                    textbutton "[t]":
-                        action director.SetList(state.transforms, t)
-                        alternate director.ToggleList(state.transforms, t)
-                        style "director_button"
-                        ypadding 0
+            for t in director.get_transforms():
+                textbutton "[t]":
+                    action director.SetList(state.transforms, t)
+                    alternate director.ToggleList(state.transforms, t)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
@@ -1659,22 +1623,14 @@ screen director_behind(state):
 
         use director_statement(state)
 
-        text "Behind:"
+        use director_choices("Behind:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.get_behind_tags(state.tag):
-                    textbutton "[t]":
-                        action director.SetList(state.behind, t)
-                        alternate director.ToggleList(state.behind, t)
-                        style "director_button"
-                        ypadding 0
+            for t in director.get_behind_tags(state.tag):
+                textbutton "[t]":
+                    action director.SetList(state.behind, t)
+                    alternate director.ToggleList(state.behind, t)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
@@ -1686,21 +1642,13 @@ screen director_with(state):
 
         use director_with_statement(state)
 
-        text "Transition:"
+        use director_choices("Transition:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for t in director.transitions:
-                    textbutton "[t]":
-                        action director.SetTransition(t)
-                        style "director_button"
-                        ypadding 0
+            for t in director.transitions:
+                textbutton "[t]":
+                    action director.SetTransition(t)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
@@ -1712,21 +1660,13 @@ screen director_channel(state):
 
         use director_audio_statement(state)
 
-        text "Channel:"
+        use director_choices("Channel:"):
 
-        frame:
-            style "empty"
-            left_margin 10
-
-            hbox:
-                box_wrap True
-                spacing 20
-
-                for c in director.audio_channels:
-                    textbutton "[c]":
-                        action director.SetChannel(c)
-                        style "director_button"
-                        ypadding 0
+            for c in director.audio_channels:
+                textbutton "[c]":
+                    action director.SetChannel(c)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
@@ -1738,30 +1678,15 @@ screen director_audio(state):
 
         use director_audio_statement(state)
 
-        text "Audio Filename:"
+        use director_choices("Audio Filename:"):
 
-        frame:
-            style "empty"
-            left_margin 10
+            for fn in director.audio_files.get(state.channel, [ ]):
+                $ elided_fn = director.audio_filename_to_display(state.channel, fn)
 
-            viewport:
-                scrollbars "vertical"
-                ymaximum director.viewport_height
-                mousewheel True
-                yinitial 0.0
-                yfill False
-
-                has hbox:
-                    box_wrap True
-                    spacing 20
-
-                for fn in director.audio_files.get(state.channel, [ ]):
-                    $ elided_fn = director.audio_filename_to_display(state.channel, fn)
-
-                    textbutton "[elided_fn]":
-                        action director.SetAudio(fn)
-                        style "director_button"
-                        ypadding 0
+                textbutton "[elided_fn]":
+                    action director.SetAudio(fn)
+                    style "director_button"
+                    ypadding 0
 
         use director_footer(state)
 
