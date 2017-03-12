@@ -1404,7 +1404,7 @@ screen director_lines(state):
                         min_width 179
                         style "director_text"
 
-                    textbutton "+" action add_action style "director_edit_button"
+                    textbutton "+" action add_action style "director_edit_button" alt ("add before " + line_text)
 
                 hbox:
 
@@ -1414,9 +1414,9 @@ screen director_lines(state):
                         style "director_text"
 
                     if change_action:
-                        textbutton "✎" action change_action style "director_edit_button"
+                        textbutton "✎" action change_action style "director_edit_button" alt ("change " + line_text)
                     else:
-                        textbutton " " action change_action style "director_edit_button"
+                        textbutton " " action change_action style "director_edit_button" alt ("change " + line_text)
 
                     text "[line_text]":
                         style "director_text"
