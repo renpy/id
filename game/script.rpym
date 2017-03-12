@@ -6,9 +6,6 @@ define e = Character(_('Eileen'))
 
 label start:
 
-    play sound "sound/1.ogg"
-    stop music
-
     e "Hi there, it's me again. Today I'm going to teach you how to use Ren'Py's interactive director."
     e "There isn't much around yet, but you can fix that. Click 'interactive director' at the top of the screen, to open the director, then click the bottom of the screen to advance things."
     e "Let's add a background. In the director, click '+', 'scene', 'roof', and then 'Add' to finish."

@@ -172,8 +172,13 @@ init python in director:
         state.transforms = [ ]
         state.original_transforms = [ ]
 
+        # A list of image tags the current image is behind.
         state.behind = [ ]
         state.original_behind = [ ]
+
+        # The transition in a with statement.
+        state.transition = None
+        state.original_transition = None
 
         # The audio channel.
         state.channel = None
@@ -182,6 +187,8 @@ init python in director:
         # The audio file.
         state.audio = None
         state.original_audio = None
+
+        # NOTE: Remember to add new states to the Cancel function.
 
         # Has the new line been added to ast.
         state.added_statement = None
@@ -420,7 +427,7 @@ init python in director:
 
         return rv
 
-    def update_ast():
+    def update_ast(force=False):
         """
         Updates the abstract syntax tree to match the current state, forcing
         a rollback if something significant has changed. This always forces
@@ -429,7 +436,7 @@ init python in director:
 
         statement = get_statement()
 
-        if state.added_statement == statement:
+        if (state.added_statement == statement) and not force:
 
             renpy.restart_interaction()
             return
@@ -446,6 +453,12 @@ init python in director:
         state.added_statement = statement
 
         renpy.rollback(checkpoints=0, force=True, greedy=True)
+
+    def dump_script():
+        for i in range(0, 100):
+            key = ('game/script.rpy', i)
+            if key in renpy.scriptedit.lines:
+                print(key, renpy.scriptedit.lines[key].text)
 
     def pick_tag():
         """
@@ -795,6 +808,9 @@ init python in director:
             self.transition = None
             self.behind = [ ]
 
+            self.channel = None
+            self.audio = None
+
             self.sensitive = True
 
             def audio(n):
@@ -904,6 +920,7 @@ init python in director:
             state.showing = self.lle.showing
 
             state.kind = self.kind
+            state.original_kind = self.kind
 
             if self.kind == "with":
                 state.mode = "with"
@@ -1193,9 +1210,13 @@ init python in director:
             state.attributes = state.original_attributes
             state.transforms = state.original_transforms
 
+            state.transition = state.original_transition
+
+            state.channel = state.original_channel
+            state.audio = state.original_audio
+
             state.mode = "lines"
 
-            renpy.clear_line_log()
             update_ast()
 
     class Remove(Action):
@@ -1209,14 +1230,11 @@ init python in director:
             state.tag = None
             state.mode = "lines"
 
-            renpy.clear_line_log()
-
             try:
-                update_ast()
+                update_ast(force=True)
             finally:
                 if state.change:
                     renpy.scriptedit.remove_line(state.filename, state.linenumber)
-                    remove_spacing(state.filename, state.linenumber)
 
 
     # Displayables #############################################################
