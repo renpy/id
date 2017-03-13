@@ -900,15 +900,15 @@ init python in director:
 
                 self.kind = "voice"
                 self.sensitive = False
-                self.channel = "voice"
+                self.channel = voice_channel
 
                 try:
                     self.audio = eval(p)
                 except:
                     return
 
+                self.audio = audio_code_to_filename(self.channel, self.audio)
                 self.sensitive = True
-
 
         def get_sensitive(self):
             return self.sensitive
