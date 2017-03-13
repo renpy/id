@@ -15,7 +15,8 @@ label start:
     show eileen happy
 
     e "In the director now, you can see a show statement we added for you. Move me to the right by clicking the editing pencil, then '(transform)' and 'right'. Click Change to finish."
-    e "You can also add hide and with statements, and remove statements using the editing pencil."
+    e "You can also add use hide to hide an image, with to invoke a transition, and play, queue, stop, and voice statements to manage sound, music, and voices."
+    e "To remove a statement, click the editing pencil and then Remove."
     e "We hope that this makes directing your game a bit easier."
 
     return
