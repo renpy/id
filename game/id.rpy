@@ -94,7 +94,7 @@ init python in director:
     )
 
     def audio_code_to_filename(channel, fn):
-        return
+        return fn
 
     def audio_filename_to_code(channel, fn):
         return fn
@@ -436,8 +436,7 @@ init python in director:
 
         statement = get_statement()
 
-        if (state.added_statement == statement) and not force:
-
+        if (state.added_statement == statement) and (not force):
             renpy.restart_interaction()
             return
 
