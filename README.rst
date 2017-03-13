@@ -182,7 +182,10 @@ Changelog
 
 4.0
     This release adds support for the play, queue, stop, and voice
-    statements. Some variables have been renamed.
+    statements, which control sound, music, and voice. Several of the
+    configuration variables have been renamed to reflect the fact that not
+    all statements are display-related. Automated tests have been added to
+    the project, and some bugs have been fixed.
 
 3.0
     This release supports screen language statements that do not not have
