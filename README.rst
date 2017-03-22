@@ -129,6 +129,7 @@ Viewport
 
 The director can also be customized by editing its styles.
 
+
 Custom Director Button
 ----------------------
 
@@ -143,6 +144,56 @@ the button. An example replacement is::
             action director.Start()
             xalign 1.0
             yalign 0.0
+
+
+Audio Filename Functions
+------------------------
+
+There are a number of audio filename functions that can be used to convert
+filenames on disk to filenames in code. This can be used to match Ren'Py
+functionality that maps filenames. For example, if one has::
+
+    define config.voice_filename_format = "v/{filename}.ogg"
+
+one can define the functions::
+
+    init python in director:
+
+        def audio_code_to_filename(channel, code):
+            """
+            This converts the name of an audio filename as seen in the code,
+            to the filename as seen on disk.
+            """
+
+            if channel == "voice":
+                return "v/" + code + ".ogg"
+
+            return code
+
+        def audio_filename_to_code(channel, fn):
+            """
+            This converts the name of an audio filename on disk to the filename
+            as seen in code.
+            """
+
+            if channel == "voice":
+                return fn.replace("v/", "").replace(".ogg", "")
+
+            return fn
+
+        def audio_filename_to_display(channel, fn):
+            """
+            This converts the audio filename as seen on disk so it can be
+            presented to the creator.
+            """
+
+            if channel == "voice":
+                return fn.replace("v/", "").replace(".ogg", "")
+
+            return fn
+
+to match it.
+
 
 License
 -------
