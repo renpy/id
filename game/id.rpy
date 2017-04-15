@@ -32,11 +32,6 @@ init python in director:
     # The version of the director.
     version = "4.0"
 
-    # Is the director licensed for commercial use? Yes, you can remove
-    # the warning by changing this variable - but it doesn't change the
-    # license of the director tool.
-    commercial = False
-
     # A set of tags that will not be show to the user.
     tag_blacklist = { "black", "text", "vtext", "side" }
 
@@ -1749,12 +1744,8 @@ screen director():
             yalign 1.0
             spacing 10
 
-            if not director.commercial:
-                text "v[director.version]":
-                    size 10
-
-                text "The interactive director is licensed for non-commercial use only.":
-                    size 10
+            text "v[director.version]":
+                size 10
 
 
 screen director_button():

@@ -6,8 +6,8 @@ isn't meant as a replacement for the text editor, which is required to add
 most statements. The director lets you add - with a live preview - scene,
 show, hide and with statements, directing image presentation.
 
-Note that this is not an open source project. It is free for non-commercial
-use. Please see the full license below for more details.
+The Interactive Director is now an open source project, licensed under
+the same MIT license as Ren'Py itself.
 
 Download and Demo
 -----------------
@@ -198,34 +198,27 @@ to match it.
 License
 -------
 
-This program is free for *non-commercial use*, under the terms of the
-following license::
+This program is free for all purposes - commercial and non-commercial,
+under the terms of the following license::
 
-    # Permission to use, copy, modify, and/or distribute this software for
-    # non-commerical purposes is hereby granted, provided that the above
-    # copyright notice and this permission notice appear in all copies.
+    # Permission is hereby granted, free of charge, to any person
+    # obtaining a copy of this software and associated documentation files
+    # (the "Software"), to deal in the Software without restriction,
+    # including without limitation the rights to use, copy, modify, merge,
+    # publish, distribute, sublicense, and/or sell copies of the Software,
+    # and to permit persons to whom the Software is furnished to do so,
+    # subject to the following conditions:
     #
-    # For the purpose of this license, when using this software to develop a
-    # another software program, this program is being used commercially if
-    # payment is required to distribute that program, to use that program, or
-    # to access any feature in that program, or if the program presents
-    # advertising to its user.
+    # The above copyright notice and this permission notice shall be
+    # included in all copies or substantial portions of the Software.
     #
-    # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    # REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    # AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    # INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    # LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-    # OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    # PERFORMANCE OF THIS SOFTWARE.
-
-While being developed in the open, this tool is not open source. It's
-free for use in creating non-commercial games, but is commercial when
-used to develop commercial games.
-
-I haven't figured out the commercial terms yet, but you should expect them
-to be quite nominal. Email pytom@bishoujo.us if you really want to use
-this code to make a commercial game.
+    # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    # NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+    # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+    # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 Changelog
